@@ -1,20 +1,39 @@
 # astryx-information-maximalist-theme
 
-An [Astryx](https://github.com/facebook/astryx) integration package that contributes the
-**Information Maximalist** page template: a deliberately dense portal home — a search masthead
-over a horizontally scrollable section run, bands of headlines under topic tabs, a service
-directory, ranked lists, delayed quotes and a forecast, closing on a promo rail. The rail is a
-real `LayoutPanel` at wide surfaces, folds into the content column between 680–1139px, and the
-masthead splits into two rows below 680px — all measured against the template's own surface
-width rather than the viewport, so it renders correctly in embedded/preview surfaces too.
+An [Astryx](https://github.com/facebook/astryx) integration package that contributes two separate,
+independently usable things:
+
+- **A source theme** — `information-maximalist`, a dense portal visual system expressed entirely in
+  Astryx theme tokens and component theming targets. It restyles _any_ Astryx composition.
+- **A page template** — `information-maximalist`, a deliberately dense portal home page. It is
+  content only: it composes Astryx primitives and declares no provider of its own.
+
+They are designed to be used together but are not coupled. The template is authored purely against
+Astryx's semantic system — no hex colours, no `px` literals, no class names, no inline styles — so
+the theme restyles it without either one referring to the other, and either can be used on its own.
 
 **[▸ Live demo](https://imdreamrunner.github.io/astryx-information-maximalist-theme/)** — the
-template itself, rendered from this repository's `templates/` source. Resize the window past
-1140px and 680px to see the rail fold and the masthead split.
+template rendered through the theme. Append
+[`?theme=off`](https://imdreamrunner.github.io/astryx-information-maximalist-theme/?theme=off) to
+see the same template with no theme applied; the difference is entirely what the theme contributes.
+Resize past 1140px and 680px to watch the rail fold and the masthead split.
 
-## Install
+## Separation of concerns
 
-This package is published only on GitHub (not npm), so install it by repository reference:
+| Lives in                    | Owns                                                                 |
+| --------------------------- | -------------------------------------------------------------------- |
+| `themes/` (this package)    | The visual system — tokens, component overrides, icons, adaptations  |
+| `templates/` (this package) | The page structure and content, written against that semantic system |
+| `apps/demo` (not shipped)   | **Activation** — mounting React and wrapping the page in `<Theme>`   |
+
+The template deliberately does **not** wrap itself in a `<Theme>` provider. A page template that
+installed a global theme would fight any app that already has one, and would make it impossible to
+render the page under a different theme. Activation belongs to the host, which is why it lives in
+the demo app and why the demo is the only project here that deploys to Pages.
+
+## Install the integration
+
+Published only on GitHub (not npm), so install it by repository reference:
 
 ```bash
 npm install github:imdreamrunner/astryx-information-maximalist-theme
@@ -31,7 +50,53 @@ export default {
 };
 ```
 
-## Use
+## Use the theme
+
+```bash
+astryx theme list --package astryx-information-maximalist-theme
+astryx theme add information-maximalist ./src/theme
+```
+
+`theme add` copies the theme in as **editable source you own** — both
+`informationMaximalistTheme.ts` and its `icons.tsx` — rather than linking a dependency. Activate it
+in your app's root:
+
+```tsx
+import {Theme} from '@astryxdesign/core/theme';
+import {informationMaximalistTheme} from './theme/informationMaximalistTheme';
+
+<Theme theme={informationMaximalistTheme}>
+  <App />
+</Theme>;
+```
+
+Passing the theme as source means `<Theme>` compiles it to CSS at runtime. For production, compile
+it ahead of time and ship the stylesheet:
+
+```bash
+astryx theme build ./src/theme/informationMaximalistTheme.ts -o ./src/theme/theme.css \
+  --icons-specifier ./icons.mjs
+```
+
+### What the theme does
+
+Five rules, all encoded through public theme APIs — no page-specific CSS:
+
+1. **Tight type** — 13px base on a 1.14 ratio, so more levels of hierarchy fit in a narrow band.
+2. **Compressed space** — the spacing scale pulled in ~25% at the steps layouts actually use.
+3. **Hairlines, not boxes** — structure carried by 1px separators; `--shadow-low`/`--shadow-med`
+   are set to `none` rather than softened.
+4. **Near-square corners** — `radius: {base: 4, multiplier: 0.25}`.
+5. **Density follows the viewport** — expressed as theme `adaptations` (width breakpoints plus a
+   coarse-pointer rule), not as media queries in a consumer's stylesheet. Below `md` the scale
+   relaxes for hand-held reading; coarse pointers get real hit targets; above `2xl` both step back
+   up for across-the-room legibility.
+
+Component overrides address theming targets from `astryx theme targets` (`card`, `layout-header`,
+`tab-indicator`, `badge`, `link`, …), which is what makes the system portable rather than tied to
+one page.
+
+## Use the template
 
 ```bash
 astryx template --list --package astryx-information-maximalist-theme
@@ -42,69 +107,108 @@ Scaffolding rewrites the template's `/template-assets/*` image references to inl
 data URIs, so the scaffolded page renders with zero setup regardless of whether the consuming
 project has those asset files.
 
-## Demo app
+The page is a portal home: a search masthead over a horizontally scrollable section run, bands of
+headlines under topic tabs, a service directory, ranked lists, delayed quotes and a forecast,
+closing on a promo rail. The rail is a real `LayoutPanel` at wide surfaces, folds into the content
+column between 680–1139px, and the masthead splits into two rows below 680px — all measured against
+the template's own surface width rather than the viewport, so it renders correctly in
+embedded/preview surfaces too.
 
-[`demo/`](./demo) is a small Vite + React app whose only job is to put the template on a screen.
-It is deliberately chrome-free: no wrapper UI, no theme switcher, nothing layered over the
-template — what you see is the template.
+## Repository layout
 
-```bash
-cd demo
-npm install
-npm run dev
-```
-
-`npm install` resolves `astryx-information-maximalist-theme` as a `file:..` dependency — a link
-back to this repository — so `demo/src/main.tsx` imports the template through the same package
-specifier a consuming project uses, and any change to `templates/` shows up on the next reload.
-
-| Script              | Does                                                     |
-| ------------------- | -------------------------------------------------------- |
-| `npm run dev`       | Vite dev server with hot reload                          |
-| `npm run build`     | Production build into `demo/dist`                        |
-| `npm run preview`   | Serve the built output, as Pages does                    |
-| `npm run typecheck` | `tsc --noEmit`, covering the template source it imports  |
-| `npm run lint`      | Prettier format check over `demo/`                       |
-
-Two notes on how it is wired, both in [`demo/vite.config.ts`](./demo/vite.config.ts):
-
-- **Base path.** Pages serves the site from `/astryx-information-maximalist-theme/`, so the demo
-  builds against that base by default; `DEMO_BASE=/ npm run build` targets a domain root instead.
-  The template addresses its imagery with root-absolute `/template-assets/*` paths, which only
-  resolve at a domain root, so a small transform rewrites those literals under the configured
-  base. The template source is left untouched — this is the same rewrite `astryx template`
-  performs when it scaffolds the template, except that it points at the real images rather than
-  inline placeholders, so the demo shows the original design.
-- **Assets and symlinks.** `publicDir` points at this repository's own `public/`, so the demo
-  serves the shipped imagery instead of keeping a second copy. Because the `file:..` dependency
-  is a symlink out of `demo/`, both Vite and TypeScript run with `preserveSymlinks` so the
-  template's own imports resolve from `demo/node_modules`.
-
-Pushes to `main` build and publish the demo via
-[`.github/workflows/deploy-demo.yml`](./.github/workflows/deploy-demo.yml). Nothing in `demo/` is
-part of the published package — `files` in `package.json` does not include it — so installing this
-integration does not pull the demo's dependencies.
-
-## Package layout
+This is a [pnpm workspace](https://pnpm.io/workspaces). The repository root is itself a workspace
+member — it _is_ the integration package — so `apps/demo` can depend on it with `workspace:*` and
+consume the real package rather than a copy.
 
 ```
-astryx.integration.mjs                        — integration manifest (points the CLI at ./templates)
+package.json                                  — the integration package (published by GitHub ref)
+pnpm-workspace.yaml                           — workspace definition; lists '.' and 'apps/*'
+astryx.integration.mjs                        — integration manifest (./templates and ./themes)
+
+themes/
+  manifest.json                                — theme catalog
+  information-maximalist/
+    informationMaximalistTheme.ts              — the theme (catalog `entry`)
+    icons.tsx                                  — Heroicons-backed IconRegistry
+
 templates/
   information-maximalist.tsx                   — the page template source
   information-maximalist.template.mjs          — template metadata (name, description, category)
-public/template-assets/                        — the original demo imagery; rendered as-is by the
-                                                  demo app, and not required by the CLI, which
-                                                  rewrites every `/template-assets/*` reference to
-                                                  an inline placeholder on scaffold (see "Use")
-demo/                                          — standalone Vite app that renders the template
-                                                  (see "Demo app"); not part of the package
+
+public/template-assets/                        — the original imagery; rendered as-is by the demo,
+                                                 and not required by the CLI, which rewrites every
+                                                 `/template-assets/*` reference to an inline
+                                                 placeholder on scaffold
+
+apps/demo/                                     — private workspace app; consumes the theme and the
+                                                 template and owns activation. Not published: it is
+                                                 absent from `files` in package.json
 ```
+
+pnpm is used rather than npm workspaces for one concrete reason: pnpm keeps the workspace definition
+in `pnpm-workspace.yaml`, so the root `package.json` — the manifest consumers actually install —
+carries no `workspaces` field it has no use for.
+
+## Workspace commands
+
+Run from the repository root:
+
+```bash
+pnpm install
+pnpm dev
+```
+
+| Command              | Does                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `pnpm dev`           | Vite dev server for `apps/demo`, with hot reload over both theme and template                                |
+| `pnpm build`         | Production build of every app into `apps/*/dist`                                                             |
+| `pnpm typecheck`     | `tsc --noEmit` per app, which also covers the theme and template sources they import                         |
+| `pnpm lint`          | Prettier check across the workspace                                                                          |
+| `pnpm format`        | Prettier write                                                                                               |
+| `pnpm theme:build`   | Compile the theme with the Astryx CLI — the only thing that validates overrides against real theming targets |
+| `pnpm theme:targets` | List every themeable target, with its props and states                                                       |
+| `pnpm theme:list`    | Verify the theme catalog resolves through the integration                                                    |
+| `pnpm template:list` | Verify the template is discoverable through the integration                                                  |
+| `pnpm check`         | lint → typecheck → theme:build → build, the same gates CI runs                                               |
+
+## The demo app
+
+[`apps/demo`](./apps/demo) is a small Vite + React app whose only job is to put the template on a
+screen under the theme. It is chrome-free: no wrapper UI, nothing layered over the page.
+
+[`apps/demo/src/main.tsx`](./apps/demo/src/main.tsx) imports both the theme and the template through
+the **package name**, not relative paths — the same specifiers a consuming project uses — so the
+demo exercises the package's real `exports` contract:
+
+```tsx
+import {informationMaximalistTheme} from 'astryx-information-maximalist-theme/themes/information-maximalist/informationMaximalistTheme.ts';
+import InformationMaximalistPage from 'astryx-information-maximalist-theme/templates/information-maximalist.tsx';
+```
+
+`?theme=off` renders the same page with the provider removed. That switch exists so the claim that
+the template is authored against the theme's semantic system is checkable rather than asserted.
+
+Two notes on the wiring, both in [`apps/demo/vite.config.ts`](./apps/demo/vite.config.ts):
+
+- **Base path.** Pages serves the site from `/astryx-information-maximalist-theme/`, so the demo
+  builds against that base by default; `DEMO_BASE=/ pnpm build` targets a domain root instead. The
+  template addresses its imagery with root-absolute `/template-assets/*` paths, which only resolve
+  at a domain root, so a small transform rewrites those literals under the configured base. The
+  template source is left untouched — this is the same rewrite `astryx template` performs on
+  scaffold, except that it points at the real images rather than inline placeholders, so the demo
+  shows the original design.
+- **Assets.** `publicDir` points at this repository's own `public/`, so the demo serves the shipped
+  imagery instead of keeping a second copy.
+
+Pushes to `main` build and publish the demo via
+[`.github/workflows/deploy-demo.yml`](./.github/workflows/deploy-demo.yml). Only `apps/demo` is
+deployed; the integration is never published to npm.
 
 ## Source
 
-Extracted from [facebook/astryx](https://github.com/facebook/astryx) at commit
+Template extracted from [facebook/astryx](https://github.com/facebook/astryx) at commit
 [`5c6b6f2b0cdb4c187ca9174f6e993307f2b51ee7`](https://github.com/facebook/astryx/commit/5c6b6f2b0cdb4c187ca9174f6e993307f2b51ee7),
-repackaged as a standalone installable integration.
+repackaged as a standalone installable integration. The theme is original to this repository.
 
 ## License
 

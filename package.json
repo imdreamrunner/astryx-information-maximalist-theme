@@ -1,8 +1,8 @@
 {
   "name": "astryx-information-maximalist-theme",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "displayName": "Information Maximalist",
-  "description": "Astryx integration package contributing the Information Maximalist page template: a deliberately dense portal home with a search masthead, topic bands, a service directory, ranked lists, and a promo rail.",
+  "description": "Astryx integration package contributing the Information Maximalist source theme and page template: a dense portal visual system — tight type scale, hairline separators, near-flat surfaces — and a portal home page authored against it.",
   "license": "MIT",
   "author": "Ivor Zhou",
   "homepage": "https://github.com/imdreamrunner/astryx-information-maximalist-theme#readme",
@@ -16,25 +16,56 @@
   "keywords": [
     "astryx",
     "astryx-integration",
+    "astryx-theme",
+    "theme",
+    "source-theme",
     "template",
     "page-template",
     "portal",
-    "dashboard"
+    "dashboard",
+    "information-density"
   ],
   "type": "module",
+  "packageManager": "pnpm@10.34.5",
   "files": [
     "astryx.integration.mjs",
     "templates",
+    "themes",
     "public",
     "LICENSE",
     "README.md"
   ],
   "exports": {
-    "./templates/*.tsx": "./templates/*.tsx"
+    "./templates/*.tsx": "./templates/*.tsx",
+    "./themes/*.ts": "./themes/*.ts",
+    "./themes/*.tsx": "./themes/*.tsx",
+    "./themes/manifest.json": "./themes/manifest.json",
+    "./astryx.integration.mjs": "./astryx.integration.mjs"
+  },
+  "scripts": {
+    "dev": "pnpm --filter astryx-information-maximalist-demo run dev",
+    "build": "pnpm --filter \"./apps/*\" run build",
+    "typecheck": "pnpm --filter \"./apps/*\" run typecheck",
+    "lint": "prettier --check .",
+    "format": "prettier --write .",
+    "theme:build": "astryx theme build themes/information-maximalist/informationMaximalistTheme.ts --out .astryx-theme-check/informationMaximalist.css --icons-specifier ./icons.mjs",
+    "theme:list": "astryx theme list --package astryx-information-maximalist-theme",
+    "theme:targets": "astryx theme targets",
+    "template:list": "astryx template --list --package astryx-information-maximalist-theme",
+    "check": "pnpm run lint && pnpm run typecheck && pnpm run theme:build && pnpm run build"
   },
   "peerDependencies": {
-    "@astryxdesign/core": ">=0.5.0",
+    "@astryxdesign/core": ">=0.6.0",
     "@heroicons/react": "^2.2.0",
     "react": ">=19.0.0"
+  },
+  "devDependencies": {
+    "@astryxdesign/cli": "^0.6.2",
+    "@astryxdesign/core": "^0.6.2",
+    "@heroicons/react": "^2.2.0",
+    "@types/react": "^19.1.0",
+    "prettier": "^3.4.2",
+    "react": "^19.1.0",
+    "typescript": "^5.7.3"
   }
 }

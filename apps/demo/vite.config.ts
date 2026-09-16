@@ -2,7 +2,8 @@ import {fileURLToPath} from 'node:url';
 import react from '@vitejs/plugin-react';
 import {defineConfig, type Plugin} from 'vite';
 
-const repoRoot = fileURLToPath(new URL('..', import.meta.url));
+// This app lives at `apps/demo`, so the repository root is two levels up.
+const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 
 /**
  * GitHub Pages serves this project site from a sub-path, so the default base is
@@ -49,14 +50,15 @@ export default defineConfig({
   plugins: [baseTemplateAssets(), react()],
   // The template's imagery lives at the repository root and is part of the
   // published package, so serve it from there rather than keeping a second copy.
-  publicDir: fileURLToPath(new URL('../public', import.meta.url)),
+  publicDir: fileURLToPath(new URL('../../public', import.meta.url)),
   resolve: {
-    // The integration package is a `file:..` dependency, so it is a symlink out
-    // of `demo/`. Following it to its real path would make the template's own
-    // imports (`react`, `@astryxdesign/core/*`) resolve from the repository
-    // root, which has no `node_modules`. Keeping the symlinked path resolves
-    // them from `demo/node_modules`. `tsconfig.json` mirrors this.
-    preserveSymlinks: true,
+    // Symlinks are followed (pnpm's default). The integration package is a
+    // `workspace:*` dependency and declares `react`, `@astryxdesign/core` and
+    // `@heroicons/react` itself, so the template's and theme's own imports
+    // resolve from the repository root's `node_modules` — and because pnpm
+    // links both projects at the same store path, that is the same physical
+    // React this app loads. `dedupe` makes the guarantee explicit rather than
+    // incidental.
     dedupe: ['react', 'react-dom'],
   },
   optimizeDeps: {

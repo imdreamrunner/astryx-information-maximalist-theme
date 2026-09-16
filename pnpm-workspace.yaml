@@ -1,0 +1,21 @@
+# The repository root is itself a workspace package — it is the Astryx
+# integration that gets published by GitHub reference, so it has to stay
+# installable as `github:imdreamrunner/astryx-information-maximalist-theme`.
+# Listing `.` here makes it a workspace member too, so `apps/demo` can depend on
+# it with `workspace:*` and consume the real package rather than a copy.
+#
+# This is why the workspace is pnpm and not npm: pnpm keeps the workspace
+# definition in this file, so the root `package.json` — the manifest consumers
+# actually install — needs no `workspaces` field it would otherwise carry for no
+# reason.
+packages:
+  - '.'
+  - 'apps/*'
+
+# pnpm 10 blocks dependency lifecycle scripts unless they are named here. Vite
+# needs esbuild's postinstall to unpack its platform binary, so without this the
+# build fails on a clean install. Listed explicitly rather than disabling the
+# protection, so adding a dependency that wants to run code at install time
+# stays a visible decision.
+onlyBuiltDependencies:
+  - esbuild

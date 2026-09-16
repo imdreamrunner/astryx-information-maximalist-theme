@@ -1,3 +1,7 @@
 .claude/
 node_modules/
-demo/dist/
+apps/demo/dist/
+
+# Scratch output of `pnpm run theme:build`, which exists only to prove the theme
+# compiles. The demo renders the theme from source, so nothing here is shipped.
+.astryx-theme-check/

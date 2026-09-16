@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "themes": [
+    {
+      "slug": "information-maximalist",
+      "displayName": "Information Maximalist",
+      "description": "A dense portal visual system: tight 13px type scale, compressed spacing, hairline separators instead of shadows, near-square corners, and density that adapts to the viewport.",
+      "maintained": true,
+      "entry": "informationMaximalistTheme.ts",
+      "exportName": "informationMaximalistTheme",
+      "files": ["informationMaximalistTheme.ts", "icons.tsx"]
+    }
+  ]
+}

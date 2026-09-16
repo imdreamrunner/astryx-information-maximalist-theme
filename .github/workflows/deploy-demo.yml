@@ -22,23 +22,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # pnpm before Node, because `setup-node`'s pnpm cache needs the pnpm
+      # binary to resolve the store path.
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: demo/package-lock.json
+          cache: pnpm
 
+      # One install for the whole workspace: the root is itself a member (the
+      # integration package), so this also links it into `apps/demo`.
       - name: Install
-        working-directory: demo
-        run: npm ci
-
-      - name: Typecheck
-        working-directory: demo
-        run: npm run typecheck
+        run: pnpm install --frozen-lockfile
 
       - name: Lint
-        working-directory: demo
-        run: npm run lint
+        run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      # The demo renders the theme from TypeScript source, so nothing downstream
+      # would notice an override the compiler rejects. Building the theme is
+      # what turns that into a failing check.
+      - name: Build theme
+        run: pnpm run theme:build
+
+      # Proves the integration still contributes what it claims: that the theme
+      # catalog resolves and the template is discoverable through the package.
+      - name: Verify integration contributions
+        run: |
+          pnpm run theme:list
+          pnpm run template:list
 
       # After the code gates, so a run that cannot compile does not reconfigure
       # the repository's Pages settings on its way to failing.
@@ -55,15 +70,14 @@ jobs:
         with:
           enablement: true
 
-      - name: Build
-        working-directory: demo
+      - name: Build demo
         env:
           DEMO_BASE: ${{ steps.pages.outputs.base_path }}
-        run: npm run build
+        run: pnpm run build
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: demo/dist
+          path: apps/demo/dist
 
   deploy:
     needs: build

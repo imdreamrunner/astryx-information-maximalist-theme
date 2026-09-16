@@ -1,0 +1,7 @@
+node_modules/
+dist/
+pnpm-lock.yaml
+
+# The template is the product this repository ships, kept byte-identical to its
+# original source. Formatting is not allowed to touch it.
+templates/
