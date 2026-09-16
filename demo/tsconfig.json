@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": ["vite/client", "node"],
+
+    "jsx": "react-jsx",
+    "useDefineForClassFields": true,
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "verbatimModuleSyntax": true,
+
+    // `astryx-information-maximalist-theme` is a `file:..` dependency, so it is
+    // a symlink out of `demo/`. Following it to its real path would make the
+    // template's own imports (`react`, `@astryxdesign/core/*`) resolve from the
+    // repository root, where there is no `node_modules`. Keeping the symlinked
+    // path resolves them from `demo/node_modules` instead. `vite.config.ts`
+    // sets the matching `resolve.preserveSymlinks`.
+    "preserveSymlinks": true,
+
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["src", "vite.config.ts"]
+}

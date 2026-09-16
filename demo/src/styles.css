@@ -1,0 +1,23 @@
+/*
+ * Astryx ships pre-built CSS; the import order maps to its layer cascade.
+ * No theme package is imported on purpose — `astryx.css` carries the default
+ * token values, which is the palette the template was designed against.
+ * Those defaults are `light-dark()` pairs, so the demo follows the reader's
+ * system colour scheme.
+ */
+@import '@astryxdesign/core/reset.css';
+@import '@astryxdesign/core/astryx.css';
+
+/*
+ * The template is a `Layout` at its default `height="fill"`: it fills its
+ * container and scrolls its slots internally. Give it the viewport to fill.
+ */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
