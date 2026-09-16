@@ -9,14 +9,17 @@ independently usable things:
   content only: it composes Astryx primitives and declares no provider of its own.
 
 They are designed to be used together but are not coupled. The template is authored purely against
-Astryx's semantic system — no hex colours, no `px` literals, no class names, no inline styles — so
-the theme restyles it without either one referring to the other, and either can be used on its own.
+Astryx's semantic system — no hex colours, no stylesheets, no class names, no inline styles, and no
+type, spacing or radius values of its own — so the theme restyles it without either one referring to
+the other, and either can be used on its own. The only measurements it states are the widths of its
+two fixed columns, which are composition rather than style.
 
 **[▸ Live demo](https://imdreamrunner.github.io/astryx-information-maximalist-theme/)** — the
 template rendered through the theme. Append
 [`?theme=off`](https://imdreamrunner.github.io/astryx-information-maximalist-theme/?theme=off) to
 see the same template with no theme applied; the difference is entirely what the theme contributes.
-Resize past 1140px and 680px to watch the rail fold and the masthead split.
+Resize past 1040px, 880px and 720px to watch the directory fold, the rail drop under the news well,
+and the masthead split.
 
 ## Separation of concerns
 
@@ -80,14 +83,25 @@ astryx theme build ./src/theme/informationMaximalistTheme.ts -o ./src/theme/them
 
 ### What the theme does
 
-Five rules, all encoded through public theme APIs — no page-specific CSS:
+Seven rules, all encoded through public theme APIs — no page-specific CSS:
 
-1. **Tight type** — 13px base on a 1.14 ratio, so more levels of hierarchy fit in a narrow band.
-2. **Compressed space** — the spacing scale pulled in ~25% at the steps layouts actually use.
-3. **Hairlines, not boxes** — structure carried by 1px separators; `--shadow-low`/`--shadow-med`
-   are set to `none` rather than softened.
+1. **Dense type, CJK-safe** — 14px base on a shallow 1.08 ratio, so eight levels of hierarchy fit
+   between 12px and 16px, with every leading pinned into 1.36–1.43. The family stack leads with the
+   system UI faces and then the Japanese ones (`Hiragino Kaku Gothic ProN`, `Yu Gothic`,
+   `Noto Sans JP`), because a portal at this size is unreadable in a fallback serif.
+2. **Compressed space** — steps 1–4 are left at a canonical 4/8/12/16 rhythm, which is what a dense
+   layout actually gauges itself against; only the larger steps are pulled in, so nothing above the
+   fold spends space on air.
+3. **Hairlines, not boxes** — structure carried by 1px blue-gray separators; `--shadow-low` and
+   `--shadow-med` are set to `none` rather than softened, so a module is a ruled rectangle.
 4. **Near-square corners** — `radius: {base: 4, multiplier: 0.25}`.
-5. **Density follows the viewport** — expressed as theme `adaptations` (width breakpoints plus a
+5. **A bounded sheet** — the `layout` target gets a `max-width` and `margin-inline: auto`, so the
+   page reads as a centred document rather than stretching to any monitor. Pale blue-gray utility
+   surfaces sit against it.
+6. **A utilitarian tab trough** — square, ruled tabs in a tinted bar with the selected one cut out
+   in white so it joins the panel below. The portal's own idiom, and it says which section is open
+   twice over — by tone and by weight — in 28px of height.
+7. **Density follows the viewport** — expressed as theme `adaptations` (width breakpoints plus a
    coarse-pointer rule), not as media queries in a consumer's stylesheet. Below `md` the scale
    relaxes for hand-held reading; coarse pointers get real hit targets; above `2xl` both step back
    up for across-the-room legibility.
@@ -107,12 +121,17 @@ Scaffolding rewrites the template's `/template-assets/*` image references to inl
 data URIs, so the scaffolded page renders with zero setup regardless of whether the consuming
 project has those asset files.
 
-The page is a portal home: a search masthead over a horizontally scrollable section run, bands of
-headlines under topic tabs, a service directory, ranked lists, delayed quotes and a forecast,
-closing on a promo rail. The rail is a real `LayoutPanel` at wide surfaces, folds into the content
-column between 680–1139px, and the masthead splits into two rows below 680px — all measured against
-the template's own surface width rather than the viewport, so it renders correctly in
-embedded/preview surfaces too.
+The page is a portal home in the East Asian style, and its content is original fictional Japanese
+copy throughout — a two-row masthead over a tinted search well, then three unequal columns of ruled
+modules: a service directory rail, headlines under section tabs, and a rail of sign-in, forecast,
+index quotes and access rankings. It is built from bulleted text links carrying comment counts and
+status flags rather than from cards, with imagery rationed to one focal image per module.
+
+Three surface widths change the arrangement: below 1040px the directory folds into a band across the
+top, below 880px the rail drops under the news well, and below 720px the masthead splits into rows,
+the search scopes scroll sideways and the focal image moves under its headline list. All three are
+measured against the template's own surface width rather than the viewport, so the page also renders
+correctly inside a preview dialog, a split editor or a catalog card.
 
 ## Repository layout
 

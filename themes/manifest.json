@@ -4,7 +4,7 @@
     {
       "slug": "information-maximalist",
       "displayName": "Information Maximalist",
-      "description": "A dense portal visual system: tight 13px type scale, compressed spacing, hairline separators instead of shadows, near-square corners, and density that adapts to the viewport.",
+      "description": "A dense portal visual system in the East Asian style: a 14px CJK-safe type scale with a shallow ratio and 1.4 leading, compressed spacing, blue-gray hairlines instead of shadows, near-square corners, pale utility surfaces, a utilitarian tab trough, a bounded centred page, and density that adapts to the viewport.",
       "maintained": true,
       "entry": "informationMaximalistTheme.ts",
       "exportName": "informationMaximalistTheme",

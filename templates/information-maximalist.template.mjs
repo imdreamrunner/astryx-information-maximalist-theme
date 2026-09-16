@@ -5,11 +5,14 @@ export default {
   type: 'page',
   name: 'Information Maximalist',
   description:
-    'Deliberately dense portal home: a search masthead over a section run, ' +
-    'then bands of headlines under topic tabs, a service directory, ranked ' +
-    'lists, quotes and a forecast, closing on a rail that folds into the ' +
-    'content and spreads when the surface narrows. Portal, homepage, ' +
-    'aggregator, directory, digest, newsstand, ranking, widget grid, ' +
-    'high density, or information dense.',
+    'Deliberately dense portal home in the East Asian style: a two-row ' +
+    'masthead over a tinted search well, then three unequal columns of ruled ' +
+    'modules — a service directory rail, headlines under section tabs, and a ' +
+    'rail of sign-in, forecast, index quotes and access rankings. Built from ' +
+    'bulleted text links with comment counts and status flags rather than ' +
+    'cards, with imagery rationed to one focal image per module; folds to two ' +
+    'columns and then one as the surface narrows. Portal, homepage, ' +
+    'aggregator, directory, news index, digest, newsstand, ranking, link ' +
+    'list, widget grid, high density, or information dense.',
   category: 'Dashboard - Widget Grid',
 };

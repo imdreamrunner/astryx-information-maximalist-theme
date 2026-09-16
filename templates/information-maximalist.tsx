@@ -6,105 +6,106 @@
  * Information Maximalist — a portal home page that puts everything above the
  * fold.
  *
- * The frame is a content-only `Layout`: a two-row masthead, a scrolling
- * content well of stacked bands, a rail of ranked lists, and a link footer.
- * The density is the point. Where a dashboard spends its width on a few large
- * figures, a portal spends it on many small ones — headlines, ranks, prices,
- * a forecast and a service directory all reachable without a scroll or a
- * click. Every band is therefore sized to its text rather than to a grid of
- * equal cards, and nothing is hidden behind a disclosure that the eye would
- * have to open.
+ * The model is the East Asian web portal, and the composition is what makes it
+ * one: a bounded sheet, a two-row masthead over a tinted search well, then
+ * three unequal columns of ruled modules — a service directory, a news module
+ * under section tabs, and a rail of weather, markets and rankings. Where a
+ * dashboard spends its width on a few large figures, a portal spends it on many
+ * small ones, so every module is sized to its text rather than to a grid of
+ * equal cards, and nothing hides behind a disclosure the eye would have to open.
+ *
+ * Two decisions carry most of the density:
+ *
+ * - **The text link is the unit of design.** Modules are lists of bulleted
+ *   links with a comment count and, where something is new, a status flag.
+ *   That is roughly six times as many entry points per vertical inch as a card
+ *   grid, and it is why the theme reserves its accent for links alone.
+ * - **Imagery is rationed to one focal image per module, at most.** Most
+ *   modules have none. A portal's pictures are there to break a column of
+ *   text, not to illustrate every row, and a second image inside one module
+ *   immediately reads as an advertisement.
  *
  * Responsive in three steps, each one measured against the template's own
  * surface rather than the window (see {@link useSurfaceWidth}):
  *
- * - Wide (>= 1140px): the rail is a real `LayoutPanel` in the `end` slot,
- *   scrolling independently of the content well beside it.
- * - Medium (680–1139px): the rail folds into the bottom of the content well
- *   and spreads across up to three columns, so the ranked lists stay side by
- *   side instead of becoming one very long column.
- * - Narrow (< 680px): the masthead splits into two rows — wordmark and icon
- *   actions above, full-width search below — and the section run turns into a
- *   horizontally scrolling strip instead of wrapping to four ragged lines.
+ * - Wide (>= 1040px): three columns — directory, news well, rail.
+ * - Medium (880–1039px): two columns. The service directory unfolds from a
+ *   vertical rail into a wrapped band of links above the columns, which is the
+ *   one module that reads equally well either way, so the news well and the
+ *   rail both keep a usable measure.
+ * - Narrow (< 880px): one wide column, modules in reading order.
  *
- * Between those steps every band is a `Grid` keyed on a minimum child width,
- * so the columns reflow continuously rather than snapping at the breakpoints
- * above.
+ * The masthead has its own, lower threshold (720px): a tablet crosses into one
+ * column while still having room for the full three-across masthead, and only
+ * a phone gets the stacked wordmark, the sideways-scrolling search scopes and
+ * the focal image moved below its headline list.
  *
- * All figures are fixtures: no clocks, no randomness, no fetching, so the
- * preview and any screenshot of it are byte-stable. Links are inert (`#`).
+ * All content is fictional and all figures are fixtures: no clocks, no
+ * randomness, no fetching, so the preview and any screenshot of it are
+ * byte-stable. Links are inert (`#`).
+ *
+ * This file is content and composition only. It declares no colours, no px
+ * literals and no class names, and it does not import or mount a `Theme` — the
+ * host chooses what to render it in. Everything visual it relies on (the type
+ * scale, the hairlines, the tinted utility surface, the tab trough, the bounded
+ * centred shell) comes from theme tokens and theming targets, which is what
+ * lets the same composition be re-skinned without touching this file.
  */
 
-import {useLayoutEffect, useRef, useState} from 'react';
+import {Fragment, useLayoutEffect, useRef, useState} from 'react';
 import type {ReactNode} from 'react';
-import {Banner} from '@astryxdesign/core/Banner';
-import {Button} from '@astryxdesign/core/Button';
+import {AspectRatio} from '@astryxdesign/core/AspectRatio';
 import {Badge} from '@astryxdesign/core/Badge';
-import {ClickableCard} from '@astryxdesign/core/ClickableCard';
+import {Button} from '@astryxdesign/core/Button';
+import {Card} from '@astryxdesign/core/Card';
 import {Divider} from '@astryxdesign/core/Divider';
 import {Grid} from '@astryxdesign/core/Grid';
 import {Icon} from '@astryxdesign/core/Icon';
 import {IconButton} from '@astryxdesign/core/IconButton';
-import {Item} from '@astryxdesign/core/Item';
 import {
   Layout,
   LayoutContent,
   LayoutFooter,
   LayoutHeader,
-  LayoutPanel,
 } from '@astryxdesign/core/Layout';
 import {Link} from '@astryxdesign/core/Link';
 import {List, ListItem} from '@astryxdesign/core/List';
-import {MetadataList, MetadataListItem} from '@astryxdesign/core/MetadataList';
-import {ProgressBar} from '@astryxdesign/core/ProgressBar';
 import {ScrollableArea} from '@astryxdesign/core/ScrollableArea';
-import {Section} from '@astryxdesign/core/Section';
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from '@astryxdesign/core/SegmentedControl';
 import {HStack, StackItem, VStack} from '@astryxdesign/core/Stack';
-import {StatusDot} from '@astryxdesign/core/StatusDot';
 import {Tab, TabList} from '@astryxdesign/core/TabList';
 import {Heading, Text} from '@astryxdesign/core/Text';
 import {TextInput} from '@astryxdesign/core/TextInput';
-import {Thumbnail} from '@astryxdesign/core/Thumbnail';
 import {Token} from '@astryxdesign/core/Token';
 import type {IconType} from '@astryxdesign/core/Icon';
 import {
   ArrowTrendingDownIcon,
   ArrowTrendingUpIcon,
-  BanknotesIcon,
   Bars3Icon,
+  BanknotesIcon,
   BellIcon,
-  BoltIcon,
+  BookOpenIcon,
   BriefcaseIcon,
-  BuildingOffice2Icon,
+  BuildingStorefrontIcon,
   CakeIcon,
   CalendarDaysIcon,
-  ChartBarIcon,
-  ChatBubbleLeftRightIcon,
-  ChevronRightIcon,
+  ChatBubbleLeftEllipsisIcon,
   CloudIcon,
   CreditCardIcon,
+  DevicePhoneMobileIcon,
   EnvelopeIcon,
-  EyeIcon,
-  FireIcon,
-  GlobeAltIcon,
+  GiftIcon,
+  GlobeAsiaAustraliaIcon,
   HomeModernIcon,
   MagnifyingGlassIcon,
   MapIcon,
   NewspaperIcon,
   PaperAirplaneIcon,
   PuzzlePieceIcon,
-  ShareIcon,
-  ShoppingBagIcon,
-  Squares2X2Icon,
   SunIcon,
   TagIcon,
-  TicketIcon,
   TrophyIcon,
-  UserCircleIcon,
+  TruckIcon,
+  TvIcon,
 } from '@heroicons/react/24/outline';
 
 // =============================================================================
@@ -112,20 +113,36 @@ import {
 // =============================================================================
 
 /**
- * Above this surface width the rail is a real panel beside the content; below
- * it the rail folds underneath. 1140 is where a 320px rail plus two 340px
- * content columns plus their gaps stop fitting, so the fold happens exactly
- * when the columns would otherwise start starving each other.
+ * Above this surface width the page runs three columns. 1040 is where the
+ * directory rail, a news well wide enough for a headline on one line, and a
+ * 300px rail stop fitting together — below it one of the three always starves,
+ * and the directory is the one that survives being folded.
  */
-const RAIL_MIN_SURFACE = 1140;
+const THREE_COLUMN_SURFACE = 1040;
 
 /**
- * Below this width the masthead splits into two rows and the section run
- * scrolls sideways. 680 is where the wordmark, a usable search field and the
- * account actions stop sharing one line without the field collapsing to a few
- * characters.
+ * Above this width the news well and the rail stay side by side. 880 is set by
+ * the rail, not the well: the rail is a fixed 312, so anything narrower leaves
+ * the well under ~550 and its headlines start taking two lines each with the
+ * comment count orphaned onto a third. One wide column of one-line headlines
+ * beats two columns of wrapped ones, so below this the rail goes underneath.
  */
-const NARROW_SURFACE = 680;
+const TWO_COLUMN_SURFACE = 880;
+
+/**
+ * Below this width the masthead splits into rows, the search scopes scroll
+ * sideways, and the news module's focal image moves under its headline list.
+ *
+ * Deliberately not tied to the column count: a 768 tablet reads best as one
+ * *wide* column — full-width modules, side-by-side focal image, and the
+ * three-across masthead it has room for — so it crosses the column threshold
+ * long before it needs a phone's chrome.
+ */
+const NARROW_SURFACE = 720;
+
+/** Widths of the two fixed columns; the news well takes what is left. */
+const DIRECTORY_WIDTH = 188;
+const RAIL_WIDTH = 312;
 
 /**
  * The width of the box this template was given, tracked as it changes.
@@ -174,528 +191,428 @@ function useSurfaceWidth() {
 
 // =============================================================================
 // Fixtures
+//
+// みなとネット is an invented portal for the invented city of 潮見; every name,
+// headline, figure, source and date below is fictional.
 // =============================================================================
 
-/** The masthead's section run — a portal's whole surface area, spelled out. */
-const SECTIONS: readonly string[] = [
-  'News',
-  'Weather',
-  'Sports',
-  'Finance',
-  'Shopping',
-  'Auctions',
-  'Travel',
-  'Maps',
-  'Jobs',
-  'Property',
-  'Recipes',
-  'Games',
+/** The thin utility strip above the masthead. */
+const UTILITY_LINKS: readonly string[] = [
+  'ホームに設定',
+  'こども向け',
+  'アプリ',
+  'ヘルプ',
 ];
 
-interface ServiceTile {
+interface ShortcutTile {
   label: string;
   icon: IconType;
-  /** Shown as a small count chip when the service has something waiting. */
-  count?: string;
 }
 
-const SERVICES: readonly ServiceTile[] = [
-  {label: 'Mail', icon: EnvelopeIcon, count: '3'},
-  {label: 'News', icon: NewspaperIcon},
-  {label: 'Weather', icon: CloudIcon},
-  {label: 'Maps', icon: MapIcon},
-  {label: 'Shopping', icon: ShoppingBagIcon, count: '2'},
-  {label: 'Auctions', icon: TagIcon},
-  {label: 'Finance', icon: BanknotesIcon},
-  {label: 'Sports', icon: TrophyIcon},
-  {label: 'Travel', icon: PaperAirplaneIcon},
-  {label: 'Jobs', icon: BriefcaseIcon},
-  {label: 'Property', icon: HomeModernIcon},
-  {label: 'Recipes', icon: CakeIcon},
-  {label: 'Cards', icon: CreditCardIcon},
-  {label: 'Tickets', icon: TicketIcon},
-  {label: 'Calendar', icon: CalendarDaysIcon},
-  {label: 'Games', icon: PuzzlePieceIcon},
+/** Icon shortcuts flanking the wordmark, three to a side. */
+const MASTHEAD_START: readonly ShortcutTile[] = [
+  {label: 'ショッピング', icon: BuildingStorefrontIcon},
+  {label: 'オークション', icon: TagIcon},
+  {label: 'フリマ', icon: GiftIcon},
 ];
 
-interface PickItem {
-  title: string;
-  meta: string;
-  image: string;
-  alt: string;
-}
+const MASTHEAD_END: readonly ShortcutTile[] = [
+  {label: 'トラベル', icon: PaperAirplaneIcon},
+  {label: 'カード', icon: CreditCardIcon},
+  {label: 'メール', icon: EnvelopeIcon},
+];
 
-/** The photo strip: small square art beside a two-line caption. */
-const PICKS: readonly PickItem[] = [
-  {
-    title: 'Six walks that end at a bakery',
-    meta: 'Weekend · 8 min read',
-    image: '/template-assets/light-lifestyle-horizontal-1.png',
-    alt: 'Cyclist resting outside a corner bakery',
-  },
-  {
-    title: 'What the new cooling rules mean for renters',
-    meta: 'Explainer · 5 min read',
-    image: '/template-assets/building.png',
-    alt: 'Apartment block with exterior air handling units',
-  },
-  {
-    title: 'A kitchen built for two square metres',
-    meta: 'Home · 6 min read',
-    image: '/template-assets/light-home-square-1.png',
-    alt: 'Compact kitchen with open shelving',
-  },
-  {
-    title: 'The night shift that keeps the trains moving',
-    meta: 'Photo essay · 12 min read',
-    image: '/template-assets/moody-working-horizontal-1.png',
-    alt: 'Maintenance crew working on a rail platform at night',
-  },
+/** Search scopes. The first is the active one. */
+const SEARCH_SCOPES: readonly string[] = [
+  'ウェブ',
+  '画像',
+  '動画',
+  '地図',
+  'ニュース',
+  '辞典',
+  '一覧',
+];
+
+/** The two announcement links under the search well. */
+const PROMO_LINKS: readonly string[] = [
+  '秋の交通ダイヤ改正まとめ',
+  'メール障害のお知らせと復旧状況',
+];
+
+/** The service directory rail — a portal's whole surface area, spelled out. */
+const SERVICE_DIRECTORY: readonly ShortcutTile[] = [
+  {label: 'ショッピング', icon: BuildingStorefrontIcon},
+  {label: 'オークション', icon: TagIcon},
+  {label: 'フリマ', icon: GiftIcon},
+  {label: 'トラベル', icon: PaperAirplaneIcon},
+  {label: 'グルメ', icon: CakeIcon},
+  {label: 'ふるさと納税', icon: HomeModernIcon},
+  {label: '宅配', icon: TruckIcon},
+  {label: 'ニュース', icon: NewspaperIcon},
+  {label: '天気・災害', icon: CloudIcon},
+  {label: 'スポーツ', icon: TrophyIcon},
+  {label: 'ファイナンス', icon: BanknotesIcon},
+  {label: '番組表', icon: TvIcon},
+  {label: 'みんなの質問', icon: ChatBubbleLeftEllipsisIcon},
+  {label: '地図', icon: MapIcon},
+  {label: '求人', icon: BriefcaseIcon},
+  {label: 'ゲーム', icon: PuzzlePieceIcon},
+  {label: '電子書籍', icon: BookOpenIcon},
+  {label: 'カレンダー', icon: CalendarDaysIcon},
 ];
 
 interface Headline {
   title: string;
-  source: string;
-  time: string;
-  tag: string;
+  /** Comment count. Rendered as an alert chip once it runs into four figures. */
   comments: number;
+  /** Optional status flag: 新着 for new, 速報 for breaking. */
+  flag?: {label: string; tone: 'new' | 'breaking'};
 }
 
-interface TopicFeed {
-  lead: {
-    title: string;
-    summary: string;
+interface NewsFeed {
+  /** Stamp above the list, in the portal's usual 月/日(曜) 時:分 form. */
+  updated: string;
+  headlines: readonly Headline[];
+  /** The module's single focal image. */
+  focal: {
+    caption: string;
+    stamp: string;
     source: string;
-    time: string;
     image: string;
     alt: string;
-    flag?: string;
   };
-  headlines: readonly Headline[];
 }
 
-const TOPICS: readonly {id: string; label: string}[] = [
-  {id: 'top', label: 'Top'},
-  {id: 'domestic', label: 'Domestic'},
-  {id: 'world', label: 'World'},
-  {id: 'business', label: 'Business'},
-  {id: 'tech', label: 'Tech'},
-  {id: 'sports', label: 'Sports'},
-  {id: 'life', label: 'Life'},
+const NEWS_TABS: readonly {id: string; label: string}[] = [
+  {id: 'main', label: '主要'},
+  {id: 'domestic', label: '国内'},
+  {id: 'world', label: '国際'},
+  {id: 'economy', label: '経済'},
+  {id: 'tech', label: 'IT・科学'},
+  {id: 'sports', label: 'スポーツ'},
+  {id: 'life', label: '暮らし'},
+  {id: 'local', label: '地域'},
 ];
 
-const FEEDS: Record<string, TopicFeed> = {
-  top: {
-    lead: {
-      title: 'Rail operator adds 14 late-night services after commuter survey',
-      summary:
-        'The extra departures run Friday and Saturday from Central Terminal, and ticket gates on the three busiest platforms stay staffed until 01:30.',
-      source: 'Kiosk Wire',
-      time: '12:04',
-      image: '/template-assets/moody-scene-horizontal-1.png',
-      alt: 'Illuminated commuter train waiting at a platform',
-      flag: 'Live',
-    },
+const NEWS_FEEDS: Record<string, NewsFeed> = {
+  main: {
+    updated: '9/17(木) 6:30更新',
     headlines: [
       {
-        title:
-          'Grocery prices ease for a third month as vegetable supply recovers',
-        source: 'Kiosk Wire',
-        time: '11:52',
-        tag: 'Economy',
-        comments: 214,
+        title: '深夜バス14便を増発 通勤実態調査うけ',
+        comments: 238,
+        flag: {label: '新着', tone: 'new'},
       },
+      {title: '野菜の値下がり3カ月連続 供給が回復', comments: 176},
+      {title: '海水冷却で消費電力31%減 実証実験おわる', comments: 87},
       {
-        title: 'Harborview trials seawater cooling for its new data district',
-        source: 'Northline Post',
-        time: '11:30',
-        tag: 'Tech',
-        comments: 87,
-      },
-      {
-        title: 'Two-year viaduct repair finishes nine weeks early',
-        source: 'Kiosk Wire',
-        time: '11:12',
-        tag: 'Domestic',
+        title: '高架橋の補修が完了 予定より9週間早く',
         comments: 41,
+        flag: {label: '新着', tone: 'new'},
       },
+      {title: '木曜夕方から内陸で大雨のおそれ 気象台', comments: 512},
+      {title: '秋季代表23人を発表 初選出は2人', comments: 1240},
       {
-        title:
-          'Regulator asks parcel firms to publish delivery-window accuracy',
-        source: 'Ledger Daily',
-        time: '10:58',
-        tag: 'Business',
-        comments: 130,
+        title: '空き家改修の助成 申請受付をきょう開始',
+        comments: 63,
+        flag: {label: '新着', tone: 'new'},
       },
-      {
-        title: 'Storm front to bring heavy rain inland from Thursday evening',
-        source: 'Kiosk Weather',
-        time: '10:41',
-        tag: 'Weather',
-        comments: 62,
-      },
-      {
-        title: 'National squad names 23 players for the autumn series',
-        source: 'Sideline',
-        time: '10:20',
-        tag: 'Sports',
-        comments: 508,
-      },
+      {title: '宅配の時間帯的中率 公表を各社に要請', comments: 95},
     ],
+    focal: {
+      caption: '夜間の整備ヤードで',
+      stamp: '9/16(水) 18:20',
+      source: 'みなと通信',
+      image: '/template-assets/moody-working-horizontal-1.png',
+      alt: '夜間の鉄道ホームで保線作業にあたる作業員',
+    },
   },
   domestic: {
-    lead: {
-      title:
-        'Prefecture opens applications for its empty-home renovation grant',
-      summary:
-        'Up to 3,000 households can claim half of a renovation bill capped at $18,000, with priority for homes inside the three declining rail corridors.',
-      source: 'Kiosk Wire',
-      time: '11:58',
-      image: '/template-assets/light-home-horizontal-1.png',
-      alt: 'Terraced houses on a quiet residential street',
-    },
+    updated: '9/17(木) 6:24更新',
     headlines: [
       {
-        title: 'School lunch programme extends to two more districts in April',
-        source: 'Kiosk Wire',
-        time: '11:34',
-        tag: 'Education',
-        comments: 96,
-      },
-      {
-        title: 'Night bus route 88 becomes permanent after nine-month trial',
-        source: 'Northline Post',
-        time: '11:05',
-        tag: 'Transport',
-        comments: 58,
-      },
-      {
-        title: 'Flu vaccination bookings open online for over-65s',
-        source: 'Kiosk Health',
-        time: '10:47',
-        tag: 'Health',
-        comments: 33,
-      },
-      {
-        title: 'City marathon lottery draws 142,000 entries for 28,000 places',
-        source: 'Sideline',
-        time: '10:22',
-        tag: 'Sports',
-        comments: 271,
-      },
-      {
-        title: 'Coastal wind farm clears its final environmental review',
-        source: 'Ledger Daily',
-        time: '09:58',
-        tag: 'Energy',
+        title: '空き家改修の助成 3000世帯を上限に受付',
         comments: 148,
+        flag: {label: '新着', tone: 'new'},
       },
-      {
-        title: 'Library network drops overdue fines on children’s loans',
-        source: 'Kiosk Wire',
-        time: '09:31',
-        tag: 'Culture',
-        comments: 24,
-      },
+      {title: '学校給食の無償化 4月から2地区に拡大', comments: 96},
+      {title: '深夜バス88系統が本格運行へ 9カ月の試行おわる', comments: 58},
+      {title: 'インフルエンザ予防接種 65歳以上の予約開始', comments: 33},
+      {title: '市民マラソンの抽選 14万2000人が応募', comments: 271},
+      {title: '沿岸風力の環境審査が終了 着工は来春', comments: 149},
+      {title: '図書館の延滞料 児童書で廃止へ', comments: 24},
+      {title: '県営住宅の家賃減免 申請書類を簡素化', comments: 37},
     ],
+    focal: {
+      caption: '静かな住宅地の一角',
+      stamp: '9/16(水) 15:40',
+      source: '潮見タイムズ',
+      image: '/template-assets/light-home-horizontal-1.png',
+      alt: '低層の住宅がならぶ静かな通り',
+    },
   },
   world: {
-    lead: {
-      title: 'Port strike ends after operators agree to staffed-lane guarantee',
-      summary:
-        'Container backlogs at three terminals are expected to clear within eleven days; shipping lines have already withdrawn two congestion surcharges.',
-      source: 'Meridian Desk',
-      time: '11:49',
+    updated: '9/17(木) 6:18更新',
+    headlines: [
+      {
+        title: '港湾ストが終結 人員確保の保証で合意',
+        comments: 204,
+        flag: {label: '速報', tone: 'breaking'},
+      },
+      {title: 'コンテナ滞留 11日で解消の見通し', comments: 77},
+      {title: '越境鉄道が有料運行1カ月 利用は想定の8割', comments: 61},
+      {title: '東部流域の干ばつ警戒度を1段引き下げ', comments: 45},
+      {title: '中央銀行が金利を据え置き 成長見通しは下方修正', comments: 302},
+      {title: '小麦の輸出見通し 2期連続で上方修正', comments: 58},
+      {title: '2都市が広場の暑さ対策で共同計画に署名', comments: 38},
+      {title: '海底ケーブルの修復完了 予定より1週間早く', comments: 112},
+    ],
+    focal: {
+      caption: '稼働がもどった埠頭',
+      stamp: '9/16(水) 20:05',
+      source: '北町ポスト',
       image: '/template-assets/moody-scene-horizontal-2.png',
-      alt: 'Container cranes at a working port',
+      alt: '稼働する港のコンテナクレーン',
     },
-    headlines: [
-      {
-        title: 'Cross-border rail link enters its first month of paid service',
-        source: 'Meridian Desk',
-        time: '11:18',
-        tag: 'Transport',
-        comments: 77,
-      },
-      {
-        title: 'Drought monitor lowers its alert level for the eastern basin',
-        source: 'Kiosk Weather',
-        time: '10:52',
-        tag: 'Climate',
-        comments: 45,
-      },
-      {
-        title: 'Central bank holds rates and trims its growth forecast',
-        source: 'Ledger Daily',
-        time: '10:36',
-        tag: 'Economy',
-        comments: 302,
-      },
-      {
-        title: 'Wheat exporters lift shipment estimates for a second quarter',
-        source: 'Ledger Daily',
-        time: '10:09',
-        tag: 'Markets',
-        comments: 61,
-      },
-      {
-        title: 'Two cities sign a shared plan for cooling public squares',
-        source: 'Meridian Desk',
-        time: '09:44',
-        tag: 'Cities',
-        comments: 38,
-      },
-      {
-        title: 'Undersea cable repair restores capacity a week ahead of plan',
-        source: 'Northline Post',
-        time: '09:20',
-        tag: 'Tech',
-        comments: 112,
-      },
-    ],
   },
-  business: {
-    lead: {
-      title: 'Grocery chain buys 210 franchise stores to end its dual pricing',
-      summary:
-        'The $1.4bn deal folds independently run branches into the main network, and the company says shelf prices converge by the end of the third quarter.',
-      source: 'Ledger Daily',
-      time: '11:56',
-      image: '/template-assets/light-working-horizontal-2.png',
-      alt: 'Shop assistant restocking a supermarket aisle',
-    },
+  economy: {
+    updated: '9/17(木) 6:12更新',
     headlines: [
       {
-        title: 'Parcel carrier reports its first profitable quarter since 2023',
-        source: 'Ledger Daily',
-        time: '11:41',
-        tag: 'Earnings',
-        comments: 54,
+        title: '食品チェーンが加盟店210店を買収 二重価格を解消',
+        comments: 186,
+        flag: {label: '新着', tone: 'new'},
       },
-      {
-        title: 'Regional lender reopens 12 branches it closed two years ago',
-        source: 'Ledger Daily',
-        time: '11:14',
-        tag: 'Banking',
-        comments: 89,
-      },
-      {
-        title: 'Airline adds a second daily slot on the Harborview route',
-        source: 'Kiosk Wire',
-        time: '10:50',
-        tag: 'Travel',
-        comments: 27,
-      },
-      {
-        title: 'Chip packager commits $600m to a second inland plant',
-        source: 'Northline Post',
-        time: '10:27',
-        tag: 'Industry',
-        comments: 163,
-      },
-      {
-        title: 'Retail wage floor rises 4.1% under the new sector agreement',
-        source: 'Ledger Daily',
-        time: '10:02',
-        tag: 'Labour',
-        comments: 341,
-      },
-      {
-        title: 'Electricity rebate extended through the winter billing period',
-        source: 'Kiosk Wire',
-        time: '09:37',
-        tag: 'Energy',
-        comments: 205,
-      },
+      {title: '宅配大手が黒字転換 3年ぶり', comments: 54},
+      {title: '地銀が12支店を再開 2年前の閉鎖分', comments: 89},
+      {title: '潮見便に2便目を増設 航空会社が発表', comments: 27},
+      {title: '半導体後工程に600億円 内陸2工場目', comments: 163},
+      {title: '小売の最低賃金4.1%上げ 業種協定で妥結', comments: 341},
+      {title: '電気料金の還付 冬の請求期間まで延長', comments: 205},
+      {title: '長期金利が小幅上昇 3カ月ごとの調整観測で', comments: 118},
     ],
+    focal: {
+      caption: '棚の補充がすすむ売り場',
+      stamp: '9/16(水) 17:10',
+      source: '台帳経済',
+      image: '/template-assets/light-working-horizontal-2.png',
+      alt: 'スーパーマーケットの棚を補充する従業員',
+    },
   },
   tech: {
-    lead: {
-      title: 'Seawater cooling cuts a data hall’s power draw by 31% in testing',
-      summary:
-        'Harborview’s pilot loop ran through the hottest fortnight of the year without a fallback chiller; the operator publishes the full telemetry next month.',
-      source: 'Northline Post',
-      time: '11:47',
-      image: '/template-assets/colorful-working-horizontal-2.png',
-      alt: 'Engineer inspecting cooling pipework in a server hall',
-    },
+    updated: '9/17(木) 6:06更新',
     headlines: [
       {
-        title: 'Transit app ships offline timetables after commuter feedback',
-        source: 'Northline Post',
-        time: '11:22',
-        tag: 'Apps',
-        comments: 71,
+        title: '海水冷却でデータホールの電力31%減 実証で',
+        comments: 141,
+        flag: {label: '新着', tone: 'new'},
       },
-      {
-        title: 'Open forecasting dataset adds 40 years of coastal readings',
-        source: 'Kiosk Weather',
-        time: '10:59',
-        tag: 'Data',
-        comments: 46,
-      },
-      {
-        title: 'Handset maker promises seven years of security updates',
-        source: 'Northline Post',
-        time: '10:33',
-        tag: 'Devices',
-        comments: 258,
-      },
-      {
-        title: 'Rail operator publishes its delay-prediction model as source',
-        source: 'Kiosk Wire',
-        time: '10:11',
-        tag: 'Open source',
-        comments: 134,
-      },
-      {
-        title: 'Storage prices fall for a fourth consecutive quarter',
-        source: 'Ledger Daily',
-        time: '09:48',
-        tag: 'Hardware',
-        comments: 63,
-      },
-      {
-        title: 'Two universities share a campus network research testbed',
-        source: 'Northline Post',
-        time: '09:25',
-        tag: 'Research',
-        comments: 19,
-      },
+      {title: '交通アプリがオフライン時刻表に対応', comments: 71},
+      {title: '公開気象データに沿岸40年分を追加', comments: 46},
+      {title: '端末メーカーが7年間の更新提供を約束', comments: 258},
+      {title: '遅延予測モデルを公開 鉄道事業者', comments: 134},
+      {title: 'ストレージ価格 4期連続で下落', comments: 63},
+      {title: '2大学がキャンパス網の試験環境を共用', comments: 19},
+      {title: '観測衛星の小型化 打ち上げ費用は3割減', comments: 88},
     ],
+    focal: {
+      caption: '冷却配管の点検',
+      stamp: '9/16(水) 16:45',
+      source: '北町ポスト',
+      image: '/template-assets/colorful-working-horizontal-2.png',
+      alt: 'サーバー室で冷却配管を点検する技術者',
+    },
   },
   sports: {
-    lead: {
-      title: 'Harborview hold on for a 2–1 win and a first away streak of four',
-      summary:
-        'A deflected free kick on 78 minutes settled a scrappy second half; the side travels to Northline on Saturday with a two-point cushion.',
-      source: 'Sideline',
-      time: '11:51',
-      image: '/template-assets/colorful-lifestyle-horizontal-1.png',
-      alt: 'Football supporters celebrating in a stadium stand',
-      flag: 'Final',
-    },
+    updated: '9/17(木) 6:00更新',
     headlines: [
       {
-        title: 'Autumn series squad drops two veterans for uncapped forwards',
-        source: 'Sideline',
-        time: '11:26',
-        tag: 'Rugby',
+        title: '潮見が2-1で逃げきる アウェー4連勝',
         comments: 486,
+        flag: {label: '速報', tone: 'breaking'},
       },
-      {
-        title: 'Swimmer takes the 200m record by 0.34 seconds',
-        source: 'Sideline',
-        time: '11:03',
-        tag: 'Swimming',
-        comments: 92,
-      },
-      {
-        title: 'Marathon course reroutes around the viaduct works',
-        source: 'Kiosk Wire',
-        time: '10:38',
-        tag: 'Running',
-        comments: 57,
-      },
-      {
-        title: 'League approves a 26-team format from next season',
-        source: 'Sideline',
-        time: '10:15',
-        tag: 'Football',
-        comments: 613,
-      },
-      {
-        title: 'Cyclist wins the hill stage after a 41km solo break',
-        source: 'Sideline',
-        time: '09:52',
-        tag: 'Cycling',
-        comments: 88,
-      },
-      {
-        title: 'Basketball side signs a centre on a two-year deal',
-        source: 'Sideline',
-        time: '09:29',
-        tag: 'Basketball',
-        comments: 44,
-      },
+      {title: '秋季代表23人 ベテラン2人が落選', comments: 1240},
+      {title: '200m自由形で0.34秒短縮 記録更新', comments: 92},
+      {title: 'マラソン経路を変更 高架橋工事を回避', comments: 57},
+      {title: '来季から26チーム制を承認 リーグ理事会', comments: 613},
+      {title: '山岳ステージで41kmの独走 単独首位', comments: 88},
+      {title: 'センターと2年契約 バスケ潮見', comments: 44},
+      {title: '女子駅伝の区間編成を見直し 全6区に', comments: 76},
     ],
+    focal: {
+      caption: 'スタンドの歓声',
+      stamp: '9/16(水) 21:30',
+      source: 'サイドライン',
+      image: '/template-assets/colorful-lifestyle-horizontal-1.png',
+      alt: 'スタジアムのスタンドで歓声をあげるサポーター',
+    },
   },
   life: {
-    lead: {
-      title: 'The nine-litre pantry: cooking for one without the waste',
-      summary:
-        'Four cooks rebuild a week of dinners around a single shopping trip, and explain which three staples earn their shelf space in a small kitchen.',
-      source: 'Kiosk Life',
-      time: '11:44',
-      image: '/template-assets/matcha-product-3.png',
-      alt: 'Pantry staples arranged on a wooden counter',
-    },
+    updated: '9/17(木) 5:54更新',
     headlines: [
       {
-        title: 'A gardener’s case for planting the difficult corner last',
-        source: 'Kiosk Life',
-        time: '11:20',
-        tag: 'Home',
-        comments: 36,
+        title: '9リットルの備蓄棚 ひとり分を無駄なく',
+        comments: 64,
+        flag: {label: '新着', tone: 'new'},
       },
-      {
-        title: 'Five short hikes reachable on a single day ticket',
-        source: 'Kiosk Life',
-        time: '10:56',
-        tag: 'Travel',
-        comments: 74,
-      },
-      {
-        title: 'What changed when the museum dropped its timed entry',
-        source: 'Kiosk Life',
-        time: '10:31',
-        tag: 'Culture',
-        comments: 51,
-      },
-      {
-        title: 'Sleep clinic publishes a plain-language shift-work guide',
-        source: 'Kiosk Health',
-        time: '10:07',
-        tag: 'Health',
-        comments: 118,
-      },
-      {
-        title: 'The repair café that fixed 1,900 kettles in one year',
-        source: 'Northline Post',
-        time: '09:41',
-        tag: 'Community',
-        comments: 82,
-      },
-      {
-        title: 'A reading list for the long commute, chosen by drivers',
-        source: 'Kiosk Life',
-        time: '09:18',
-        tag: 'Books',
-        comments: 29,
-      },
+      {title: '難しい一角は最後に植える 庭づくりの順番', comments: 36},
+      {title: '1日乗車券で行ける小さな山歩き5選', comments: 74},
+      {title: '時間指定をやめた美術館で起きたこと', comments: 51},
+      {title: '交代勤務の睡眠 平易な手引きを公開', comments: 118},
+      {title: '年間1900個のやかんを直した修理喫茶', comments: 82},
+      {title: '長い通勤のための読書リスト 運転士が選ぶ', comments: 29},
+      {title: '2平方メートルの台所 収納の考え方', comments: 47},
     ],
+    focal: {
+      caption: '台所の作業台で',
+      stamp: '9/16(水) 14:00',
+      source: 'みなと生活',
+      image: '/template-assets/matcha-product-3.png',
+      alt: '木の作業台にならべられた保存食材',
+    },
+  },
+  local: {
+    updated: '9/17(木) 5:48更新',
+    headlines: [
+      {
+        title: '潮見区で給水管の切替工事 22日未明',
+        comments: 31,
+        flag: {label: '新着', tone: 'new'},
+      },
+      {title: '北町の踏切を立体交差化 説明会は28日', comments: 58},
+      {title: '市民ホールの改修 来年3月まで休館', comments: 44},
+      {title: '海岸清掃の参加者を募集 定員300人', comments: 12},
+      {title: '区役所の窓口 土曜開庁を月2回に', comments: 67},
+      {title: '古紙回収の日程 10月から第2・第4火曜へ', comments: 23},
+      {title: '公園の遊具を入れ替え 5カ所で順次', comments: 19},
+      {title: '防災無線の試験放送 19日正午', comments: 26},
+    ],
+    focal: {
+      caption: '区役所前の歩道',
+      stamp: '9/16(水) 13:15',
+      source: '潮見タイムズ',
+      image: '/template-assets/building.png',
+      alt: '外壁に設備がならぶ集合住宅',
+    },
   },
 };
 
-interface TrendingTerm {
-  term: string;
-  /** Rank movement since the previous hourly cut. `0` means new to the list. */
-  delta: number;
+/** The 特集 module: one focal image, then text links. */
+const FEATURE_LEAD = {
+  title: 'パン屋で終わる散歩道、六つ',
+  body: '坂と水路をたどって、最後に焼きたてに行きあたる道を選びました。いずれも駅から歩いて始められます。',
+  meta: '週末 · 読了8分',
+  image: '/template-assets/light-lifestyle-horizontal-1.png',
+  alt: '街角のパン屋の前で休む自転車',
+};
+
+const FEATURE_LINKS: readonly {title: string; meta: string}[] = [
+  {title: '新しい冷房規則は借主に何をもたらすか', meta: '解説 · 読了5分'},
+  {title: '2平方メートルのために設計された台所', meta: '住まい · 読了6分'},
+  {title: '列車を動かしつづける夜勤の現場', meta: '写真 · 読了12分'},
+  {title: '値段の話をやめた商店街はどうなったか', meta: '経済 · 読了9分'},
+  {title: '古い高架下をどう使うか、五つの答え', meta: '都市 · 読了7分'},
+];
+
+/** 地域のお知らせ: a two-column run of pure text links, no imagery at all. */
+const LOCAL_NOTICES: readonly string[] = [
+  '粗大ごみの申込みが電話からWEBに',
+  '住民票のコンビニ交付 手数料を改定',
+  '区民プールの改修工事は10月20日から',
+  '巡回図書館の停車地を2カ所追加',
+  '保育所の入所申請 受付は11月4日まで',
+  '検診バスの日程を区の広報に掲載',
+  '駐輪場の定期利用 抽選結果は25日',
+  '街路樹の剪定 12月まで順次実施',
+];
+
+/** みんなの質問: community threads, carrying an answer count instead of a date. */
+const QA_THREADS: readonly {title: string; answers: number; isOpen: boolean}[] =
+  [
+    {
+      title: '深夜バスの定期券は増発分にも使えますか',
+      answers: 14,
+      isOpen: true,
+    },
+    {
+      title: '空き家助成、名義が親のままでも申請できる？',
+      answers: 9,
+      isOpen: true,
+    },
+    {
+      title: '高架橋の補修後、騒音は本当に減りましたか',
+      answers: 23,
+      isOpen: false,
+    },
+    {title: '区民プール休館中に使える近隣の施設は', answers: 6, isOpen: true},
+    {
+      title: '宅配の時間帯指定、実際どのくらい当たる？',
+      answers: 41,
+      isOpen: false,
+    },
+    {
+      title: '粗大ごみのWEB申込み、受付番号はどこに届く',
+      answers: 3,
+      isOpen: true,
+    },
+  ];
+
+/** 話題のキーワード: ranked search terms — the densest module on the page. */
+const TRENDING_KEYWORDS: readonly string[] = [
+  '深夜バス 88系統',
+  '空き家改修 助成',
+  '秋季代表 23人',
+  '大雨 時間帯',
+  '海水冷却 実証',
+  '高架橋 補修完了',
+  '野菜 価格',
+  '宅配 的中率',
+  '市民マラソン 抽選',
+  '給水管 切替',
+  '最低賃金 小売',
+  '港湾スト 合意',
+];
+
+/** 今週のイベント: three dated local listings, sized for the directory rail. */
+const EVENTS: readonly {date: string; title: string; place: string}[] = [
+  {date: '9/19(土)', title: '潮見港あさ市', place: '第3埠頭'},
+  {date: '9/20(日)', title: '北町たそがれ演奏会', place: '市民ホール前'},
+  {date: '9/23(水)', title: '古本と珈琲の日', place: '高架下商店街'},
+];
+
+/** The sign-in module's three shortcuts. */
+const SIGNIN_SHORTCUTS: readonly ShortcutTile[] = [
+  {label: 'メール', icon: EnvelopeIcon},
+  {label: '毎日のくじ', icon: GiftIcon},
+  {label: '残高を確認', icon: CreditCardIcon},
+];
+
+interface DayForecast {
+  label: string;
+  icon: IconType;
+  summary: string;
+  high: string;
+  low: string;
+  rain: string;
 }
 
-const TRENDING: readonly TrendingTerm[] = [
-  {term: 'late-night rail timetable', delta: 3},
-  {term: 'seawater cooling', delta: 0},
-  {term: 'flu vaccine booking', delta: 1},
-  {term: 'viaduct reopening', delta: -2},
-  {term: 'autumn series squad', delta: 7},
-  {term: 'vegetable prices', delta: -1},
-  {term: 'storm front thursday', delta: 2},
-  {term: 'empty-home grant', delta: 0},
-  {term: 'delivery window rules', delta: -4},
-  {term: 'night bus 88', delta: 5},
-  {term: 'marathon lottery result', delta: -3},
-  {term: 'electricity rebate', delta: 1},
+const FORECAST: readonly DayForecast[] = [
+  {
+    label: '今日の天気',
+    icon: CloudIcon,
+    summary: 'くもり 一時雨',
+    high: '24℃',
+    low: '19℃',
+    rain: '60%',
+  },
+  {
+    label: '明日の天気',
+    icon: SunIcon,
+    summary: 'くもり のち晴れ',
+    high: '23℃',
+    low: '19℃',
+    rain: '50%',
+  },
 ];
 
 interface MarketRow {
@@ -706,238 +623,180 @@ interface MarketRow {
 }
 
 const MARKETS: readonly MarketRow[] = [
-  {name: 'Composite 225', value: '38,942.16', change: '+0.84%', isUp: true},
-  {name: 'Broad 500', value: '2,714.08', change: '+0.31%', isUp: true},
-  {name: 'Tech 100', value: '17,308.55', change: '−0.62%', isUp: false},
-  {name: 'Harborview REIT', value: '1,986.20', change: '+0.11%', isUp: true},
-  {name: 'Gold, spot', value: '2,388.40', change: '−0.25%', isUp: false},
-  {name: 'Crude oil', value: '79.18', change: '+1.42%', isUp: true},
+  {name: '潮見総合225', value: '38,942.16', change: '+0.84%', isUp: true},
+  {name: '広域500', value: '2,714.08', change: '+0.31%', isUp: true},
+  {name: 'テック100', value: '17,308.55', change: '−0.62%', isUp: false},
+  {name: 'みなとREIT', value: '1,986.20', change: '+0.11%', isUp: true},
+  {name: '金 現物', value: '2,388.40', change: '−0.25%', isUp: false},
+  {name: '原油', value: '79.18', change: '+1.42%', isUp: true},
 ];
 
-interface ForecastDay {
-  day: string;
-  icon: IconType;
-  summary: string;
-  high: string;
-  low: string;
-  rain: string;
-}
-
-const FORECAST: readonly ForecastDay[] = [
-  {
-    day: 'Wed',
-    icon: CloudIcon,
-    summary: 'Cloudy',
-    high: '24°',
-    low: '18°',
-    rain: '60%',
-  },
-  {
-    day: 'Thu',
-    icon: BoltIcon,
-    summary: 'Storms',
-    high: '21°',
-    low: '17°',
-    rain: '80%',
-  },
-  {
-    day: 'Fri',
-    icon: SunIcon,
-    summary: 'Clear',
-    high: '25°',
-    low: '19°',
-    rain: '10%',
-  },
-  {
-    day: 'Sat',
-    icon: SunIcon,
-    summary: 'Clear',
-    high: '27°',
-    low: '20°',
-    rain: '0%',
-  },
-];
-
-interface BoardEntry {
+interface RankEntry {
   title: string;
   metric: string;
 }
 
-const BOARDS: Record<string, readonly BoardEntry[]> = {
+const RANKING_TABS: readonly {id: string; label: string}[] = [
+  {id: 'read', label: '読まれた'},
+  {id: 'shared', label: '共有'},
+  {id: 'discussed', label: 'コメント'},
+];
+
+const RANKINGS: Record<string, readonly RankEntry[]> = {
   read: [
-    {title: 'Late-night services return to six suburban lines', metric: '84k'},
-    {title: 'Why vegetable prices fell three months running', metric: '61k'},
-    {title: 'Empty-home grant: who qualifies, and when', metric: '55k'},
-    {title: 'Squad list in full, with the two surprise calls', metric: '48k'},
-    {title: 'Storm front timing, hour by hour', metric: '39k'},
-    {title: 'The viaduct repair that beat its own schedule', metric: '31k'},
+    {title: '深夜バス増発、対象は六路線', metric: '8.4万'},
+    {title: '野菜はなぜ3カ月下がったのか', metric: '6.1万'},
+    {title: '空き家助成、対象と時期の全容', metric: '5.5万'},
+    {title: '代表23人、驚きの2人はだれか', metric: '4.8万'},
+    {title: '大雨の時間帯、1時間ごとに', metric: '3.9万'},
+    {title: '9週間早まった補修の裏側', metric: '3.1万'},
   ],
   shared: [
-    {title: 'A kitchen built for two square metres', metric: '12.4k'},
-    {title: 'Repair café fixed 1,900 kettles in a year', metric: '9.8k'},
-    {title: 'Six walks that end at a bakery', metric: '8.1k'},
-    {title: 'Night shift keeping the trains moving', metric: '7.6k'},
-    {title: 'Library drops fines on children’s loans', metric: '6.2k'},
-    {title: 'Museum after the timed entry ended', metric: '4.9k'},
+    {title: '2平方メートルの台所', metric: '1.2万'},
+    {title: '年間1900個を直した修理喫茶', metric: '9800'},
+    {title: 'パン屋で終わる散歩道、六つ', metric: '8100'},
+    {title: '列車を動かしつづける夜勤', metric: '7600'},
+    {title: '児童書の延滞料を廃止', metric: '6200'},
+    {title: '時間指定をやめた美術館', metric: '4900'},
   ],
   discussed: [
-    {title: 'League approves a 26-team format', metric: '613'},
-    {title: 'Retail wage floor rises 4.1%', metric: '341'},
-    {title: 'Central bank holds and trims its forecast', metric: '302'},
-    {title: 'Marathon lottery odds, explained', metric: '271'},
-    {title: 'Seven years of security updates promised', metric: '258'},
-    {title: 'Grocery prices and the supply recovery', metric: '214'},
+    {title: '来季から26チーム制を承認', metric: '613'},
+    {title: '小売の最低賃金4.1%上げ', metric: '341'},
+    {title: '金利据え置き、見通しは下方修正', metric: '302'},
+    {title: 'マラソン抽選の倍率を読む', metric: '271'},
+    {title: '7年間の更新提供という約束', metric: '258'},
+    {title: '野菜価格と供給回復のいま', metric: '214'},
   ],
 };
 
-const BOARD_TABS: readonly {id: string; label: string; icon: IconType}[] = [
-  {id: 'read', label: 'Read', icon: EyeIcon},
-  {id: 'shared', label: 'Shared', icon: ShareIcon},
-  {id: 'discussed', label: 'Discussed', icon: ChatBubbleLeftRightIcon},
-];
-
-interface Deal {
-  title: string;
-  price: string;
-  was: string;
-  discount: string;
-  note: string;
-  image: string;
-  alt: string;
-}
-
-const DEALS: readonly Deal[] = [
-  {
-    title: 'Over-ear headphones, active noise cancelling',
-    price: '$184',
-    was: '$248',
-    discount: '−26%',
-    note: 'Free delivery · 1,204 reviews',
-    image: '/template-assets/Neutral-Headphones.png',
-    alt: 'Grey over-ear headphones',
-  },
-  {
-    title: 'Canvas daypack, 22 litre',
-    price: '$62',
-    was: '$79',
-    discount: '−22%',
-    note: 'In stock · 486 reviews',
-    image: '/template-assets/Neutral-Backpack.png',
-    alt: 'Beige canvas daypack',
-  },
-  {
-    title: 'Vacuum tumbler, 500ml',
-    price: '$27',
-    was: '$34',
-    discount: '−21%',
-    note: 'Two colours · 2,918 reviews',
-    image: '/template-assets/Neutral-Tumbler.png',
-    alt: 'Stainless steel vacuum tumbler',
-  },
-  {
-    title: 'Field watch, sapphire crystal',
-    price: '$139',
-    was: '$165',
-    discount: '−16%',
-    note: 'Ships Thursday · 331 reviews',
-    image: '/template-assets/Neutral-Watch.png',
-    alt: 'Field watch with a fabric strap',
-  },
-];
-
-interface Listing {
-  title: string;
-  bids: number;
-  ends: string;
-  price: string;
-  isClosing: boolean;
-}
-
-const LISTINGS: readonly Listing[] = [
-  {
-    title: 'Film camera, 50mm lens, working',
-    bids: 14,
-    ends: '19:40 today',
-    price: '$96',
-    isClosing: true,
-  },
-  {
-    title: 'Oak drawer unit, four drawers',
-    bids: 6,
-    ends: 'Tomorrow 21:00',
-    price: '$142',
-    isClosing: false,
-  },
-  {
-    title: 'Enamel kettle, 2.2 litre',
-    bids: 21,
-    ends: '20:15 today',
-    price: '$38',
-    isClosing: true,
-  },
-  {
-    title: 'Touring bicycle, frame size 54',
-    bids: 3,
-    ends: 'Friday 18:30',
-    price: '$310',
-    isClosing: false,
-  },
-];
+/** The rail's single focal image — a house promotion, not a third-party ad. */
+const RAIL_FEATURE = {
+  title: '潮見の宿 秋の連泊プラン',
+  body: '海沿いの14軒を、連泊の料金と送迎の有無でくらべられるようにしました。',
+  cta: 'プランを見る',
+  image: '/template-assets/light-home-square-1.png',
+  alt: '海に面した宿の客室からの眺め',
+};
 
 const FOOTER_LINKS: readonly string[] = [
-  'About Kiosk',
-  'Advertise',
-  'Publisher index',
-  'Editorial standards',
-  'Corrections',
-  'Accessibility',
-  'Privacy',
-  'Terms',
-  'Cookie settings',
-  'Help centre',
+  '会社情報',
+  '広告掲載',
+  '掲載社一覧',
+  '編集方針',
+  '訂正とお詫び',
+  'アクセシビリティ',
+  'プライバシー',
+  '利用規約',
+  'ヘルプ',
+  'お問い合わせ',
 ];
 
 // =============================================================================
-// Shared band furniture
+// Shared module furniture
 // =============================================================================
 
-interface BandProps {
+interface ModuleProps {
   title: string;
-  icon: IconType;
-  /** Inert "see everything" affordance a portal band always carries. */
+  /** Inert "see everything" affordance a portal module always carries. */
   moreLabel?: string;
-  endContent?: ReactNode;
+  /** Replaces `moreLabel` when the header needs something other than a link. */
+  headerEnd?: ReactNode;
+  /** Set for modules whose body supplies its own edge-to-edge padding. */
+  isFlush?: boolean;
   children: ReactNode;
 }
 
 /**
- * One band of the portal: a labelled surface with a heading row.
+ * One ruled module: a bordered rectangle with a hairline under its header.
  *
- * Bands are `Section`s rather than `Card`s so stacking a dozen of them does
- * not read as a dozen floating tiles — a portal is a single dense sheet.
+ * `Card` rather than `Section` because the module's defining feature here is
+ * its 1px frame, and the theme puts that on `card`. The header sits outside the
+ * padded body so its rule runs the full width of the frame — a rule that stops
+ * short of the border reads as an underlined heading instead of a division of
+ * the module, which is the whole grammar of this layout.
  */
-function Band({title, icon, moreLabel, endContent, children}: BandProps) {
+function Module({
+  title,
+  moreLabel,
+  headerEnd,
+  isFlush = false,
+  children,
+}: ModuleProps) {
   return (
-    <Section variant="section" padding={3}>
-      <VStack gap={2}>
-        <HStack gap={2} align="center" justify="between">
-          <HStack gap={1.5} align="center">
-            <Icon icon={icon} size="sm" color="accent" />
-            <Heading level={2} maxLines={1}>
-              {title}
-            </Heading>
-          </HStack>
-          {endContent}
+    <Card padding={0}>
+      <VStack gap={0}>
+        <HStack gap={2} align="center" justify="between" padding={2}>
+          <Heading level={2} maxLines={1}>
+            {title}
+          </Heading>
+          {headerEnd}
           {moreLabel !== undefined && (
-            <Link href="#" size="sm" weight="medium">
+            <Link href="#" size="sm">
               {moreLabel}
             </Link>
           )}
         </HStack>
         <Divider isFullBleed />
-        {children}
+        {isFlush ? children : <VStack padding={2}>{children}</VStack>}
       </VStack>
-    </Section>
+    </Card>
+  );
+}
+
+/**
+ * The comment count that closes every headline row.
+ *
+ * Four figures is where a count stops being metadata and becomes the reason to
+ * click, so at that point it graduates from secondary text to a red chip. The
+ * threshold is what keeps the alert colour rationed: two or three rows on the
+ * whole page carry it, which is why it still reads as an alert.
+ */
+function CommentCount({count}: {count: number}) {
+  const label = `コメント${count}件`;
+
+  if (count >= 1000) {
+    return (
+      <Token size="sm" color="red" label={String(count)} aria-label={label} />
+    );
+  }
+  return (
+    <HStack gap={0.5} align="center">
+      <Icon
+        icon={ChatBubbleLeftEllipsisIcon}
+        size="xsm"
+        color="secondary"
+        label={label}
+      />
+      <Text size="xsm" color="secondary" hasTabularNumbers>
+        {count}
+      </Text>
+    </HStack>
+  );
+}
+
+/** A directory row: hairline-stroke glyph, then the service name as a link. */
+function ServiceRow({service}: {service: ShortcutTile}) {
+  return (
+    <HStack gap={1.5} align="center">
+      <Icon icon={service.icon} size="sm" color="accent" />
+      <Link href="#" size="sm" maxLines={1}>
+        {service.label}
+      </Link>
+    </HStack>
+  );
+}
+
+/** A masthead / sign-in shortcut: glyph over label, sized for a 12px caption. */
+function ShortcutButton({shortcut}: {shortcut: ShortcutTile}) {
+  return (
+    <Link href="#" size="xsm" color="secondary">
+      <VStack gap={0.5} align="center">
+        <Icon icon={shortcut.icon} size="lg" color="accent" />
+        <Text size="xsm" color="inherit" maxLines={1}>
+          {shortcut.label}
+        </Text>
+      </VStack>
+    </Link>
   );
 }
 
@@ -945,557 +804,741 @@ function Band({title, icon, moreLabel, endContent, children}: BandProps) {
 // Masthead
 // =============================================================================
 
+function UtilityBar() {
+  return (
+    <HStack gap={2} align="center" justify="between" wrap="wrap">
+      <Link href="#" size="xsm" color="secondary" maxLines={1}>
+        駅の待合室に本棚が増えている理由
+      </Link>
+      <HStack gap={1.5} align="stretch">
+        {UTILITY_LINKS.map((link, index) => (
+          <Fragment key={link}>
+            {index > 0 && <Divider orientation="vertical" />}
+            <Link href="#" size="xsm" color="secondary" maxLines={1}>
+              {link}
+            </Link>
+          </Fragment>
+        ))}
+      </HStack>
+    </HStack>
+  );
+}
+
 function Masthead({isNarrow}: {isNarrow: boolean}) {
   const [query, setQuery] = useState('');
+  const [scope, setScope] = useState(SEARCH_SCOPES[0]);
 
   const wordmark = (
-    <HStack gap={1.5} align="center">
-      <Icon icon={Squares2X2Icon} size="lg" color="accent" />
+    <HStack gap={1} align="center">
+      <Icon icon={GlobeAsiaAustraliaIcon} size="lg" color="accent" />
       <Heading level={1} maxLines={1}>
-        Kiosk
+        みなとネット
       </Heading>
     </HStack>
   );
 
-  const search = (
-    <HStack gap={1.5} align="center">
-      <StackItem size="fill">
-        <TextInput
-          label="Search the web and Kiosk services"
-          isLabelHidden
-          placeholder="Search news, shopping, auctions…"
-          value={query}
-          onChange={setQuery}
-          startIcon={<Icon icon={MagnifyingGlassIcon} size="sm" />}
-          hasClear
-          width="100%"
-        />
-      </StackItem>
-      <Button label="Search" variant="primary" />
+  const shortcutRow = (side: readonly ShortcutTile[]) => (
+    <HStack gap={4} align="start">
+      {side.map(shortcut => (
+        <ShortcutButton key={shortcut.label} shortcut={shortcut} />
+      ))}
     </HStack>
   );
 
-  const actions = (
-    <HStack gap={1} align="center">
-      <IconButton
-        label="Mail, 3 unread"
-        icon={<Icon icon={EnvelopeIcon} size="md" />}
-        variant="ghost"
-      />
-      <IconButton
-        label="Notifications, 5 new"
-        icon={<Icon icon={BellIcon} size="md" />}
-        variant="ghost"
-      />
-      {isNarrow ? (
-        <IconButton
-          label="Account and sections"
-          icon={<Icon icon={Bars3Icon} size="md" />}
-          variant="ghost"
-        />
-      ) : (
-        <Button
-          label="Sign in"
-          variant="secondary"
-          icon={<Icon icon={UserCircleIcon} size="sm" />}
-        />
-      )}
-    </HStack>
-  );
-
-  const sectionRun = (
+  /**
+   * The scope run is a list of links rather than a `TabList`: these change what
+   * the field searches, they do not switch a panel below, and a reader who
+   * tabs through the masthead should not be handed arrow-key tab semantics for
+   * something that is really a set of destinations.
+   */
+  const scopeRun = (
     <HStack gap={2} align="center" wrap={isNarrow ? 'nowrap' : 'wrap'}>
-      {SECTIONS.map(section => (
-        <Link key={section} href="#" size="sm" color="secondary">
-          {section}
+      {SEARCH_SCOPES.map(entry => (
+        <Link
+          key={entry}
+          href="#"
+          size="sm"
+          color={entry === scope ? 'primary' : 'accent'}
+          weight={entry === scope ? 'bold' : 'normal'}
+          onClick={() => setScope(entry)}
+          aria-current={entry === scope ? 'true' : undefined}>
+          {entry}
         </Link>
       ))}
     </HStack>
   );
 
+  const searchWell = (
+    <Card variant="muted" padding={2}>
+      <VStack gap={1.5}>
+        {isNarrow ? (
+          <ScrollableArea axis="inline" label="検索の種類">
+            {scopeRun}
+          </ScrollableArea>
+        ) : (
+          scopeRun
+        )}
+        <HStack gap={1} align="center">
+          <StackItem size="fill">
+            <TextInput
+              label="キーワードで検索"
+              isLabelHidden
+              placeholder="キーワードを入力"
+              value={query}
+              onChange={setQuery}
+              hasClear
+              width="100%"
+            />
+          </StackItem>
+          <Button
+            label="検索"
+            variant="primary"
+            icon={<Icon icon={MagnifyingGlassIcon} size="sm" />}
+          />
+        </HStack>
+      </VStack>
+    </Card>
+  );
+
+  const promoRun = (
+    <HStack gap={4} align="center" justify="center" wrap="wrap">
+      {PROMO_LINKS.map(promo => (
+        <Link key={promo} href="#" size="sm" maxLines={1}>
+          » {promo}
+        </Link>
+      ))}
+    </HStack>
+  );
+
+  const accountActions = (
+    <HStack gap={0.5} align="center">
+      <IconButton
+        label="メール 未読3件"
+        icon={<Icon icon={EnvelopeIcon} size="md" />}
+        variant="ghost"
+      />
+      <IconButton
+        label="お知らせ 新着5件"
+        icon={<Icon icon={BellIcon} size="md" />}
+        variant="ghost"
+      />
+      <IconButton
+        label="メニューとアカウント"
+        icon={<Icon icon={Bars3Icon} size="md" />}
+        variant="ghost"
+      />
+    </HStack>
+  );
+
   return (
     <VStack gap={2}>
+      <UtilityBar />
       {isNarrow ? (
-        <VStack gap={2}>
-          <HStack gap={2} align="center" justify="between">
-            {wordmark}
-            {actions}
-          </HStack>
-          {search}
-        </VStack>
-      ) : (
-        <HStack gap={4} align="center">
+        <HStack gap={2} align="center" justify="between">
           {wordmark}
-          <StackItem size="fill">{search}</StackItem>
-          {actions}
+          {accountActions}
+        </HStack>
+      ) : (
+        <HStack gap={4} align="center" justify="between">
+          {shortcutRow(MASTHEAD_START)}
+          {wordmark}
+          {shortcutRow(MASTHEAD_END)}
         </HStack>
       )}
-      {isNarrow ? (
-        <ScrollableArea axis="inline" label="Kiosk sections">
-          {sectionRun}
-        </ScrollableArea>
-      ) : (
-        sectionRun
-      )}
+      {searchWell}
+      {promoRun}
     </VStack>
   );
 }
 
 // =============================================================================
-// Content bands
+// Columns
 // =============================================================================
 
-function PicksBand() {
+/**
+ * The service directory.
+ *
+ * `layout` is the one thing that changes between breakpoints: as a `rail` it is
+ * a tinted vertical column of one-per-row links; as a `band` the same links
+ * wrap across the full width above the columns. A directory is a set of equal
+ * destinations with no internal order, which is why it survives that change
+ * when none of the other modules would.
+ */
+function ServiceDirectory({layout}: {layout: 'rail' | 'band'}) {
+  if (layout === 'band') {
+    return (
+      <Card variant="muted" padding={2}>
+        <VStack gap={1.5}>
+          <Heading level={3}>サービス一覧</Heading>
+          <Divider isFullBleed />
+          <Grid columns={{minWidth: 148}} gap={1.5}>
+            {SERVICE_DIRECTORY.map(service => (
+              <ServiceRow key={service.label} service={service} />
+            ))}
+          </Grid>
+        </VStack>
+      </Card>
+    );
+  }
+
   return (
-    <Band title="Picks" icon={ChartBarIcon} moreLabel="All features">
-      <Grid columns={{minWidth: 232, max: 4}} gap={2}>
-        {PICKS.map(pick => (
-          <Item
-            key={pick.title}
-            href="#"
-            align="start"
-            density="compact"
-            labelLines={2}
-            startContent={<Thumbnail src={pick.image} alt={pick.alt} />}
-            label={
-              <Text size="sm" weight="medium">
-                {pick.title}
-              </Text>
-            }
-            description={
-              <Text size="xsm" color="secondary">
-                {pick.meta}
-              </Text>
-            }
-          />
+    <Card variant="muted" padding={2}>
+      <VStack gap={1.5} as="nav" aria-label="サービス一覧">
+        {SERVICE_DIRECTORY.map(service => (
+          <ServiceRow key={service.label} service={service} />
         ))}
-      </Grid>
-    </Band>
-  );
-}
-
-function NewsBand({
-  topic,
-  onTopicChange,
-}: {
-  topic: string;
-  onTopicChange: (next: string) => void;
-}) {
-  const active = TOPICS.find(entry => entry.id === topic) ?? TOPICS[0];
-  const feed = FEEDS[active.id];
-
-  return (
-    <Section variant="section" padding={3}>
-      <VStack gap={2}>
-        <HStack gap={2} align="center" justify="between">
-          <HStack gap={1.5} align="center">
-            <Icon icon={NewspaperIcon} size="sm" color="accent" />
-            <Heading level={2} maxLines={1}>
-              Topics
-            </Heading>
-          </HStack>
-          <Text size="xsm" color="secondary">
-            Updated 12:05
-          </Text>
-        </HStack>
-        <TabList
-          value={topic}
-          onChange={onTopicChange}
-          size="sm"
-          hasDivider
-          isFullBleed
-          overflow="scroll">
-          {TOPICS.map(entry => (
-            <Tab key={entry.id} value={entry.id} label={entry.label} />
-          ))}
-        </TabList>
-        <Item
-          href="#"
-          align="start"
-          labelLines={3}
-          startContent={<Thumbnail src={feed.lead.image} alt={feed.lead.alt} />}
-          label={
-            <VStack gap={1}>
-              <HStack gap={1.5} align="center" wrap="wrap">
-                {feed.lead.flag !== undefined && (
-                  <Token size="sm" color="red" label={feed.lead.flag} />
-                )}
-                <Text size="xsm" color="secondary">
-                  {feed.lead.source} · {feed.lead.time}
-                </Text>
-              </HStack>
-              <Text size="lg" weight="semibold">
-                {feed.lead.title}
-              </Text>
-            </VStack>
-          }
-          description={
-            <Text size="sm" color="secondary" maxLines={3}>
-              {feed.lead.summary}
-            </Text>
-          }
-        />
-        <Divider isFullBleed />
-        <List density="compact" hasDividers>
-          {feed.headlines.map(headline => (
-            <ListItem
-              key={headline.title}
-              href="#"
-              startContent={<Badge variant="neutral" label={headline.tag} />}
-              label={
-                <Text size="sm" maxLines={2}>
-                  {headline.title}
-                </Text>
-              }
-              description={
-                <Text size="xsm" color="secondary">
-                  {headline.source} · {headline.time}
-                </Text>
-              }
-              endContent={
-                <HStack gap={1} align="center">
-                  <Icon
-                    icon={ChatBubbleLeftRightIcon}
-                    size="xsm"
-                    color="secondary"
-                  />
-                  <Text size="xsm" color="secondary" hasTabularNumbers>
-                    {headline.comments}
-                  </Text>
-                </HStack>
-              }
-            />
-          ))}
-        </List>
-        <HStack gap={2} align="center" justify="between">
-          <Link href="#" size="sm" weight="medium">
-            More {active.label.toLowerCase()} stories
-          </Link>
-          <HStack gap={0.5} align="center">
-            <Text size="xsm" color="secondary">
-              128 publishers
-            </Text>
-            <Icon icon={ChevronRightIcon} size="xsm" color="secondary" />
-          </HStack>
-        </HStack>
       </VStack>
-    </Section>
-  );
-}
-
-function TrendingBand() {
-  return (
-    <Band title="Trending searches" icon={FireIcon} moreLabel="Full list">
-      <List density="compact" listStyle="decimal" start={1}>
-        {TRENDING.map(entry => (
-          <ListItem
-            key={entry.term}
-            href="#"
-            label={
-              <Text size="sm" maxLines={1}>
-                {entry.term}
-              </Text>
-            }
-            endContent={
-              entry.delta === 0 ? (
-                <Token size="sm" color="blue" label="New" />
-              ) : (
-                <HStack gap={0.5} align="center">
-                  <Icon
-                    icon={
-                      entry.delta > 0
-                        ? ArrowTrendingUpIcon
-                        : ArrowTrendingDownIcon
-                    }
-                    size="xsm"
-                    color={entry.delta > 0 ? 'success' : 'error'}
-                    label={entry.delta > 0 ? 'Rising' : 'Falling'}
-                  />
-                  <Text size="xsm" color="secondary" hasTabularNumbers>
-                    {Math.abs(entry.delta)}
-                  </Text>
-                </HStack>
-              )
-            }
-          />
-        ))}
-      </List>
-      <Text size="xsm" color="secondary">
-        Hourly cut, 12:00. Movement is against the 11:00 ranking.
-      </Text>
-    </Band>
-  );
-}
-
-function ServicesBand() {
-  return (
-    <Band title="Services" icon={Squares2X2Icon} moreLabel="All services">
-      <Grid columns={{minWidth: 84, max: 4}} gap={1.5}>
-        {SERVICES.map(service => (
-          <ClickableCard
-            key={service.label}
-            href="#"
-            label={service.label}
-            variant="muted"
-            padding={2}>
-            <VStack gap={1} align="center">
-              <Icon icon={service.icon} size="md" color="accent" />
-              <Text size="xsm" maxLines={1}>
-                {service.label}
-              </Text>
-              {service.count !== undefined && (
-                <Badge variant="error" label={service.count} />
-              )}
-            </VStack>
-          </ClickableCard>
-        ))}
-      </Grid>
-    </Band>
-  );
-}
-
-function MarketsBand() {
-  return (
-    <Band title="Markets" icon={BanknotesIcon} moreLabel="Finance">
-      <MetadataList columns="single" orientation="horizontal">
-        {MARKETS.map(row => (
-          <MetadataListItem
-            key={row.name}
-            label={row.name}
-            icon={
-              <Icon
-                icon={row.isUp ? ArrowTrendingUpIcon : ArrowTrendingDownIcon}
-                size="xsm"
-                color={row.isUp ? 'success' : 'error'}
-              />
-            }>
-            <HStack gap={1.5} align="center">
-              <Text size="sm" weight="medium" hasTabularNumbers>
-                {row.value}
-              </Text>
-              <Token
-                size="sm"
-                color={row.isUp ? 'green' : 'red'}
-                label={row.change}
-              />
-            </HStack>
-          </MetadataListItem>
-        ))}
-      </MetadataList>
-      <Text size="xsm" color="secondary">
-        As of 12:05 · quotes delayed 20 minutes
-      </Text>
-    </Band>
-  );
-}
-
-function WeatherBand() {
-  return (
-    <Band
-      title="Weather"
-      icon={CloudIcon}
-      endContent={
-        <Link href="#" size="sm" weight="medium">
-          Change location
-        </Link>
-      }>
-      <VStack gap={2}>
-        <HStack gap={3} align="center">
-          <Icon icon={CloudIcon} size="lg" color="accent" />
-          <VStack gap={0.5}>
-            <Text type="display-3">22°</Text>
-            <Text size="xsm" color="secondary">
-              Harborview Central · cloudy, feels like 24°
-            </Text>
-          </VStack>
-        </HStack>
-        <Grid columns={{minWidth: 72, max: 4}} gap={1.5}>
-          {FORECAST.map(day => (
-            <VStack key={day.day} gap={0.5} align="center">
-              <Text size="xsm" weight="medium">
-                {day.day}
-              </Text>
-              <Icon icon={day.icon} size="md" color="secondary" />
-              <Text size="xsm" hasTabularNumbers>
-                {day.high} / {day.low}
-              </Text>
-              <Text size="2xs" color="secondary" hasTabularNumbers>
-                {day.rain}
-              </Text>
-            </VStack>
-          ))}
-        </Grid>
-        <ProgressBar
-          label="Rain chance today"
-          value={60}
-          max={100}
-          hasValueLabel
-        />
-      </VStack>
-    </Band>
-  );
-}
-
-// =============================================================================
-// Rail bands
-// =============================================================================
-
-function BoardBand({
-  board,
-  onBoardChange,
-}: {
-  board: string;
-  onBoardChange: (next: string) => void;
-}) {
-  const activeBoard = BOARD_TABS.find(tab => tab.id === board) ?? BOARD_TABS[0];
-  const entries = BOARDS[activeBoard.id];
-
-  return (
-    <Band title="Ranking" icon={TrophyIcon}>
-      <VStack gap={2}>
-        <SegmentedControl
-          value={board}
-          onChange={onBoardChange}
-          label="Ranking board"
-          size="sm"
-          layout="fill">
-          {BOARD_TABS.map(tab => (
-            <SegmentedControlItem
-              key={tab.id}
-              value={tab.id}
-              label={tab.label}
-              icon={<Icon icon={tab.icon} size="xsm" />}
-            />
-          ))}
-        </SegmentedControl>
-        <List density="compact" listStyle="decimal" start={1}>
-          {entries.map(entry => (
-            <ListItem
-              key={entry.title}
-              href="#"
-              label={
-                <Text size="sm" maxLines={2}>
-                  {entry.title}
-                </Text>
-              }
-              endContent={
-                <Text size="xsm" color="secondary" hasTabularNumbers>
-                  {entry.metric}
-                </Text>
-              }
-            />
-          ))}
-        </List>
-        <Text size="xsm" color="secondary">
-          Counted over the last 24 hours.
-        </Text>
-      </VStack>
-    </Band>
-  );
-}
-
-function DealsBand() {
-  return (
-    <Band title="Deals" icon={ShoppingBagIcon} moreLabel="Shopping">
-      <List density="compact" hasDividers>
-        {DEALS.map(deal => (
-          <ListItem
-            key={deal.title}
-            href="#"
-            startContent={<Thumbnail src={deal.image} alt={deal.alt} />}
-            label={
-              <Text size="sm" maxLines={2}>
-                {deal.title}
-              </Text>
-            }
-            description={
-              <VStack gap={0.5}>
-                <HStack gap={1.5} align="center">
-                  <Text size="sm" weight="semibold" hasTabularNumbers>
-                    {deal.price}
-                  </Text>
-                  <Text
-                    size="xsm"
-                    color="secondary"
-                    hasStrikethrough
-                    hasTabularNumbers>
-                    {deal.was}
-                  </Text>
-                  <Token size="sm" color="red" label={deal.discount} />
-                </HStack>
-                <Text size="xsm" color="secondary">
-                  {deal.note}
-                </Text>
-              </VStack>
-            }
-          />
-        ))}
-      </List>
-    </Band>
-  );
-}
-
-function ListingsBand() {
-  return (
-    <Band title="Auctions" icon={TagIcon} moreLabel="All listings">
-      <List density="compact" hasDividers>
-        {LISTINGS.map(listing => (
-          <ListItem
-            key={listing.title}
-            href="#"
-            startContent={
-              <StatusDot
-                variant={listing.isClosing ? 'warning' : 'success'}
-                label={listing.isClosing ? 'Closing today' : 'Open'}
-              />
-            }
-            label={
-              <Text size="sm" maxLines={2}>
-                {listing.title}
-              </Text>
-            }
-            description={
-              <Text size="xsm" color="secondary" hasTabularNumbers>
-                {listing.bids} bids · ends {listing.ends}
-              </Text>
-            }
-            endContent={
-              <Text size="sm" weight="medium" hasTabularNumbers>
-                {listing.price}
-              </Text>
-            }
-          />
-        ))}
-      </List>
-    </Band>
+    </Card>
   );
 }
 
 /**
- * The rail's three bands, laid out for wherever the rail ended up.
+ * The news module: section tabs over a bulleted headline run, with the day's
+ * focal image held out to the side.
  *
- * `'column'` is the panel in the `end` slot; `'spread'` is the folded rail at
- * the foot of the content well, where there is width to put the bands beside
- * each other instead of stacking a third very long column.
+ * The image sits beside the list rather than above it because a portal's news
+ * module is judged on how many headlines clear the fold, and stacking the
+ * picture would cost three of them. Below the narrow threshold it moves under
+ * the list, where it costs nothing that was visible anyway.
  */
-function RailBands({
-  layout,
+function NewsModule({
+  topic,
+  onTopicChange,
+  isNarrow,
+}: {
+  topic: string;
+  onTopicChange: (next: string) => void;
+  isNarrow: boolean;
+}) {
+  const active = NEWS_TABS.find(entry => entry.id === topic) ?? NEWS_TABS[0];
+  const feed = NEWS_FEEDS[active.id];
+
+  const headlines = (
+    <VStack gap={1.5}>
+      <Text type="supporting">{feed.updated}</Text>
+      <List listStyle="disc" density="compact">
+        {feed.headlines.map(headline => (
+          <ListItem
+            key={headline.title}
+            href="#"
+            label={
+              <HStack gap={1} align="center" wrap="wrap">
+                {/*
+                  The one step up the scale on the whole page. A portal's news
+                  module is its lede, and at a uniform 14px it reads as just
+                  another list; 15px is enough to make it the thing the eye
+                  lands on first without opening a gap the other modules would
+                  then have to answer.
+                */}
+                <Text size="lg" color="accent">
+                  {headline.title}
+                </Text>
+                {headline.flag !== undefined &&
+                  (headline.flag.tone === 'breaking' ? (
+                    <Badge variant="error" label={headline.flag.label} />
+                  ) : (
+                    <Badge variant="warning" label={headline.flag.label} />
+                  ))}
+                <CommentCount count={headline.comments} />
+              </HStack>
+            }
+          />
+        ))}
+      </List>
+      <HStack gap={4} align="center">
+        <Link href="#" size="sm">
+          もっと見る
+        </Link>
+        <Link href="#" size="sm">
+          ニュース一覧
+        </Link>
+      </HStack>
+    </VStack>
+  );
+
+  const focal = (
+    <VStack gap={1} width={isNarrow ? undefined : 156}>
+      <AspectRatio ratio={4 / 3} fit="cover">
+        <img src={feed.focal.image} alt={feed.focal.alt} />
+      </AspectRatio>
+      <Link href="#" size="sm" maxLines={2}>
+        {feed.focal.caption}
+      </Link>
+      <Text type="supporting">{feed.focal.stamp}</Text>
+      <Text type="supporting">{feed.focal.source}</Text>
+    </VStack>
+  );
+
+  return (
+    <Card padding={0}>
+      <VStack gap={0}>
+        <TabList
+          value={topic}
+          onChange={onTopicChange}
+          size="sm"
+          aria-label="ニュースの分野"
+          hasDivider
+          isFullBleed
+          overflow="scroll">
+          {NEWS_TABS.map(entry => (
+            <Tab key={entry.id} value={entry.id} label={entry.label} />
+          ))}
+        </TabList>
+        <VStack padding={2}>
+          {isNarrow ? (
+            <VStack gap={2}>
+              {headlines}
+              <Divider isFullBleed />
+              {focal}
+            </VStack>
+          ) : (
+            <HStack gap={3} align="start">
+              <StackItem size="fill">{headlines}</StackItem>
+              {focal}
+            </HStack>
+          )}
+        </VStack>
+      </VStack>
+    </Card>
+  );
+}
+
+/** 特集: the one module that leads with a picture, then falls back to links. */
+function FeatureModule() {
+  return (
+    <Module title="特集・コラム" moreLabel="特集一覧">
+      <VStack gap={2}>
+        <HStack gap={2} align="start">
+          <VStack gap={1} width={136}>
+            <AspectRatio ratio={4 / 3} fit="cover">
+              <img src={FEATURE_LEAD.image} alt={FEATURE_LEAD.alt} />
+            </AspectRatio>
+          </VStack>
+          <StackItem size="fill">
+            <VStack gap={0.5}>
+              <Link href="#" size="lg" weight="bold" maxLines={2}>
+                {FEATURE_LEAD.title}
+              </Link>
+              <Text size="sm" color="secondary" maxLines={2}>
+                {FEATURE_LEAD.body}
+              </Text>
+              <Text type="supporting">{FEATURE_LEAD.meta}</Text>
+            </VStack>
+          </StackItem>
+        </HStack>
+        <Divider isFullBleed />
+        <List listStyle="disc" density="compact">
+          {FEATURE_LINKS.map(feature => (
+            <ListItem
+              key={feature.title}
+              href="#"
+              label={
+                <HStack gap={1.5} align="center" wrap="wrap">
+                  <Text size="sm" color="accent">
+                    {feature.title}
+                  </Text>
+                  <Text type="supporting">{feature.meta}</Text>
+                </HStack>
+              }
+            />
+          ))}
+        </List>
+      </VStack>
+    </Module>
+  );
+}
+
+/** 地域のお知らせ: pure text, two columns, no imagery and no metadata. */
+function NoticeModule() {
+  return (
+    <Module title="地域のお知らせ" moreLabel="潮見区の一覧">
+      <Grid columns={{minWidth: 232, max: 2}} gap={1.5}>
+        <List listStyle="disc" density="compact">
+          {LOCAL_NOTICES.slice(0, 4).map(notice => (
+            <ListItem
+              key={notice}
+              href="#"
+              label={
+                <Text size="sm" color="accent">
+                  {notice}
+                </Text>
+              }
+            />
+          ))}
+        </List>
+        <List listStyle="disc" density="compact">
+          {LOCAL_NOTICES.slice(4).map(notice => (
+            <ListItem
+              key={notice}
+              href="#"
+              label={
+                <Text size="sm" color="accent">
+                  {notice}
+                </Text>
+              }
+            />
+          ))}
+        </List>
+      </Grid>
+    </Module>
+  );
+}
+
+/**
+ * みんなの質問: community threads.
+ *
+ * The answer count replaces the comment count as the module's one figure, and
+ * the 受付中 flag is the only other mark on the row — a question with no answer
+ * yet is the one a reader can act on, so it is worth a flag where "asked three
+ * days ago" is not.
+ */
+function QuestionModule() {
+  return (
+    <Module title="みんなの質問" moreLabel="質問一覧">
+      <VStack gap={1.5}>
+        <List listStyle="disc" density="compact">
+          {QA_THREADS.map(thread => (
+            <ListItem
+              key={thread.title}
+              href="#"
+              label={
+                <HStack gap={1} align="center" wrap="wrap">
+                  <Text size="sm" color="accent">
+                    {thread.title}
+                  </Text>
+                  {thread.isOpen && <Badge variant="info" label="受付中" />}
+                  <Text size="xsm" color="secondary" hasTabularNumbers>
+                    回答{thread.answers}
+                  </Text>
+                </HStack>
+              }
+            />
+          ))}
+        </List>
+        <HStack gap={4} align="center">
+          <Link href="#" size="sm">
+            質問してみる
+          </Link>
+          <Link href="#" size="sm">
+            回答を待っている質問
+          </Link>
+        </HStack>
+      </VStack>
+    </Module>
+  );
+}
+
+/**
+ * 話題のキーワード: ranked search terms, wrapped rather than listed.
+ *
+ * Twelve entries in three lines is the highest link density on the page, and it
+ * only works because the rank number does the separating — wrapping a run of
+ * bare links would leave a reader unable to tell where one ends and the next
+ * begins once two terms share a line.
+ */
+function KeywordModule() {
+  return (
+    <Module title="話題のキーワード" moreLabel="検索ランキング">
+      <VStack gap={1.5}>
+        <HStack gap={3} align="center" wrap="wrap">
+          {TRENDING_KEYWORDS.map((keyword, index) => (
+            <HStack key={keyword} gap={1} align="center">
+              <Text size="xsm" color="secondary" hasTabularNumbers>
+                {index + 1}
+              </Text>
+              <Link href="#" size="sm">
+                {keyword}
+              </Link>
+            </HStack>
+          ))}
+        </HStack>
+        <Text type="supporting">9/17(木) 6:30時点の検索数にもとづきます</Text>
+      </VStack>
+    </Module>
+  );
+}
+
+/**
+ * 今週のイベント: three dated listings, narrow enough for the directory rail.
+ *
+ * Its whole job is to give the directory column something below it, because a
+ * 188px rail runs out of links at about half the height of the news well. Dates
+ * are tabular so the three rows align on one invisible column.
+ */
+function EventModule() {
+  return (
+    <Card padding={0}>
+      <VStack gap={0}>
+        <HStack gap={2} align="center" justify="between" padding={2}>
+          <Heading level={3} maxLines={1}>
+            今週のイベント
+          </Heading>
+        </HStack>
+        <Divider isFullBleed />
+        <VStack gap={1.5} padding={2}>
+          {EVENTS.map(event => (
+            <VStack key={event.title} gap={0}>
+              <Text size="xsm" color="secondary" hasTabularNumbers>
+                {event.date}
+              </Text>
+              <Link href="#" size="sm" maxLines={2}>
+                {event.title}
+              </Link>
+              <Text type="supporting">{event.place}</Text>
+            </VStack>
+          ))}
+          <Link href="#" size="sm">
+            イベント一覧
+          </Link>
+        </VStack>
+      </VStack>
+    </Card>
+  );
+}
+
+// =============================================================================
+// Rail modules
+// =============================================================================
+
+/** The rail's promo: the page's one unavoidable large image, kept in house. */
+function RailFeature() {
+  return (
+    <Card padding={0}>
+      <VStack gap={0}>
+        <AspectRatio ratio={16 / 9} fit="cover">
+          <img src={RAIL_FEATURE.image} alt={RAIL_FEATURE.alt} />
+        </AspectRatio>
+        <Divider isFullBleed />
+        <VStack gap={1} padding={2}>
+          <Link href="#" size="sm" weight="bold" maxLines={2}>
+            {RAIL_FEATURE.title}
+          </Link>
+          <Text type="supporting">{RAIL_FEATURE.body}</Text>
+          <Link href="#" size="sm">
+            {RAIL_FEATURE.cta}
+          </Link>
+        </VStack>
+      </VStack>
+    </Card>
+  );
+}
+
+/**
+ * The sign-in module.
+ *
+ * Its shortcuts sit in their own bordered panel, divided by vertical
+ * hairlines — the portal's way of saying "these three belong to your account"
+ * without a second heading. It is the one place on the page where a rule runs
+ * vertically, which is what makes the grouping read.
+ */
+function SignInModule() {
+  return (
+    <Module
+      title="ログイン"
+      headerEnd={
+        <HStack gap={1.5} align="center">
+          <Link href="#" size="sm">
+            ［新規登録］
+          </Link>
+          <Link href="#" size="xsm" color="secondary">
+            登録情報
+          </Link>
+        </HStack>
+      }>
+      <Card variant="muted" padding={2}>
+        {/*
+          `align="stretch"` is load-bearing: a vertical `Divider` takes its
+          height from the row, so centring the row would collapse the rules to
+          nothing. The dividers are direct children rather than wrapped with
+          the shortcut they precede, so the three `size="fill"` thirds are
+          measured against the same stack and come out equal.
+        */}
+        <HStack gap={0} align="stretch">
+          {SIGNIN_SHORTCUTS.map((shortcut, index) => (
+            <Fragment key={shortcut.label}>
+              {index > 0 && <Divider orientation="vertical" />}
+              <StackItem size="fill">
+                <ShortcutButton shortcut={shortcut} />
+              </StackItem>
+            </Fragment>
+          ))}
+        </HStack>
+      </Card>
+    </Module>
+  );
+}
+
+/** Date, two days of forecast, and the day's heat advisory. */
+function WeatherModule() {
+  return (
+    <Module
+      title="2026年9月17日(木)"
+      headerEnd={
+        <Link href="#" size="sm">
+          潮見区 ▾
+        </Link>
+      }>
+      <VStack gap={2}>
+        <Grid columns={{minWidth: 120, max: 2}} gap={2}>
+          {FORECAST.map(day => (
+            <VStack key={day.label} gap={1}>
+              <Text type="label" size="sm">
+                {day.label}
+              </Text>
+              <HStack gap={1.5} align="center">
+                <Icon icon={day.icon} size="lg" color="accent" />
+                <VStack gap={0}>
+                  <HStack gap={1} align="center">
+                    <Text size="lg" weight="bold" hasTabularNumbers>
+                      {day.high}
+                    </Text>
+                    <Text size="sm" color="secondary" hasTabularNumbers>
+                      {day.low}
+                    </Text>
+                  </HStack>
+                  <Text type="supporting" hasTabularNumbers>
+                    降水 {day.rain}
+                  </Text>
+                </VStack>
+              </HStack>
+              <Text type="supporting">{day.summary}</Text>
+            </VStack>
+          ))}
+        </Grid>
+        <Divider isFullBleed />
+        <HStack gap={1.5} align="center" justify="between" wrap="wrap">
+          <HStack gap={1.5} align="center">
+            <Text size="sm">熱中症指数</Text>
+            <Badge variant="warning" label="注意" />
+          </HStack>
+          <Link href="#" size="sm">
+            雨雲レーダー
+          </Link>
+        </HStack>
+      </VStack>
+    </Module>
+  );
+}
+
+/** Index levels and their day change, as a ruled two-column run. */
+function MarketModule() {
+  return (
+    <Module title="マーケット" moreLabel="ファイナンス">
+      <VStack gap={1.5}>
+        <List density="compact" hasDividers>
+          {MARKETS.map(row => (
+            <ListItem
+              key={row.name}
+              href="#"
+              startContent={
+                <Icon
+                  icon={row.isUp ? ArrowTrendingUpIcon : ArrowTrendingDownIcon}
+                  size="xsm"
+                  color={row.isUp ? 'success' : 'error'}
+                  label={row.isUp ? '上昇' : '下落'}
+                />
+              }
+              label={
+                <Text size="sm" color="accent" maxLines={1}>
+                  {row.name}
+                </Text>
+              }
+              endContent={
+                <HStack gap={1} align="center">
+                  <Text size="sm" weight="medium" hasTabularNumbers>
+                    {row.value}
+                  </Text>
+                  <Token
+                    size="sm"
+                    color={row.isUp ? 'green' : 'red'}
+                    label={row.change}
+                  />
+                </HStack>
+              }
+            />
+          ))}
+        </List>
+        <Text type="supporting">6:30現在 · 20分遅れの値です</Text>
+      </VStack>
+    </Module>
+  );
+}
+
+/** Access rankings, switched by a tab trough like the news module's. */
+function RankingModule({
   board,
   onBoardChange,
 }: {
-  layout: 'column' | 'spread';
+  board: string;
+  onBoardChange: (next: string) => void;
+}) {
+  const active = RANKING_TABS.find(tab => tab.id === board) ?? RANKING_TABS[0];
+  const entries = RANKINGS[active.id];
+
+  return (
+    <Card padding={0}>
+      <VStack gap={0}>
+        <HStack gap={2} align="center" justify="between" padding={2}>
+          <Heading level={2} maxLines={1}>
+            アクセスランキング
+          </Heading>
+          <Link href="#" size="sm">
+            一覧
+          </Link>
+        </HStack>
+        <TabList
+          value={board}
+          onChange={onBoardChange}
+          size="sm"
+          aria-label="ランキングの種類"
+          hasDivider
+          isFullBleed>
+          {RANKING_TABS.map(tab => (
+            <Tab key={tab.id} value={tab.id} label={tab.label} />
+          ))}
+        </TabList>
+        <VStack gap={1.5} padding={2}>
+          <List listStyle="decimal" density="compact" start={1}>
+            {entries.map(entry => (
+              <ListItem
+                key={entry.title}
+                href="#"
+                label={
+                  <Text size="sm" color="accent" maxLines={2}>
+                    {entry.title}
+                  </Text>
+                }
+                endContent={
+                  <Text size="xsm" color="secondary" hasTabularNumbers>
+                    {entry.metric}
+                  </Text>
+                }
+              />
+            ))}
+          </List>
+          <Text type="supporting">直近24時間の集計です</Text>
+        </VStack>
+      </VStack>
+    </Card>
+  );
+}
+
+/** The rail, in the order a reader needs it: account, day, money, popularity. */
+function RailModules({
+  board,
+  onBoardChange,
+}: {
   board: string;
   onBoardChange: (next: string) => void;
 }) {
   return (
-    <Grid
-      columns={layout === 'column' ? 1 : {minWidth: 300, max: 3}}
-      gap={3}
-      align="start">
-      <BoardBand board={board} onBoardChange={onBoardChange} />
-      <DealsBand />
-      <ListingsBand />
-    </Grid>
+    <>
+      <RailFeature />
+      <SignInModule />
+      <WeatherModule />
+      <MarketModule />
+      <RankingModule board={board} onBoardChange={onBoardChange} />
+    </>
   );
 }
 
@@ -1506,7 +1549,7 @@ function RailBands({
 function PortalFooter() {
   return (
     <VStack gap={1.5}>
-      <HStack gap={2} align="center" wrap="wrap">
+      <HStack gap={2} align="center" justify="center" wrap="wrap">
         {FOOTER_LINKS.map(link => (
           <Link key={link} href="#" size="xsm" color="secondary">
             {link}
@@ -1514,13 +1557,13 @@ function PortalFooter() {
         ))}
       </HStack>
       <HStack gap={2} align="center" justify="between" wrap="wrap">
-        <Text size="xsm" color="secondary">
-          © 2026 Kiosk Media. Headlines are supplied by 128 partner publishers.
+        <Text type="supporting">
+          © 2026 みなとネット · 記事は128の提携社から配信されています
         </Text>
-        <HStack gap={1.5} align="center">
-          <Icon icon={GlobeAltIcon} size="xsm" color="secondary" />
+        <HStack gap={1} align="center">
+          <Icon icon={DevicePhoneMobileIcon} size="xsm" color="secondary" />
           <Link href="#" size="xsm" color="secondary">
-            Region: Harborview
+            地域: 潮見区
           </Link>
         </HStack>
       </HStack>
@@ -1534,82 +1577,84 @@ function PortalFooter() {
 
 export default function InformationMaximalistPage() {
   const [surfaceRef, surfaceWidth] = useSurfaceWidth();
-  const [topic, setTopic] = useState('top');
+  const [topic, setTopic] = useState('main');
   const [board, setBoard] = useState('read');
-  const [isNoticeShown, setIsNoticeShown] = useState(true);
 
   // Until the first measurement lands, assume the widest arrangement: it is
   // the one a page-owning template almost always gets, and it reflows down in
   // the same frame as the measurement rather than flashing a wider layout.
-  const hasRail = surfaceWidth === 0 || surfaceWidth >= RAIL_MIN_SURFACE;
+  const columns =
+    surfaceWidth === 0 || surfaceWidth >= THREE_COLUMN_SURFACE
+      ? 3
+      : surfaceWidth >= TWO_COLUMN_SURFACE
+        ? 2
+        : 1;
   const isNarrow = surfaceWidth > 0 && surfaceWidth < NARROW_SURFACE;
+
+  const newsWell = (
+    <VStack gap={2}>
+      <NewsModule topic={topic} onTopicChange={setTopic} isNarrow={isNarrow} />
+      <FeatureModule />
+      <QuestionModule />
+      <NoticeModule />
+      <KeywordModule />
+    </VStack>
+  );
+
+  const rail = (
+    <VStack gap={2}>
+      <RailModules board={board} onBoardChange={setBoard} />
+    </VStack>
+  );
 
   return (
     <Layout
       ref={surfaceRef}
-      height="fill"
+      // `auto`, not the default `fill`: a portal home is a document, and the
+      // masthead here is three stacked rows deep. Pinning it would spend a
+      // fifth of a laptop screen on chrome that scrolls out of the way on
+      // every real portal, and on a phone it would leave the news module
+      // reading through a letterbox.
+      height="auto"
       header={
-        <LayoutHeader padding={3} hasDivider label="Kiosk masthead">
+        <LayoutHeader padding={2} hasDivider label="みなとネット ヘッダー">
           <Masthead isNarrow={isNarrow} />
         </LayoutHeader>
       }
       content={
-        <LayoutContent padding={3} isScrollable label="Portal home">
-          <VStack gap={3}>
-            {isNoticeShown && (
-              <Banner
-                status="info"
-                container="card"
-                title="Kiosk Mail maintenance tonight, 02:00–04:00"
-                description="Sending and receiving pause for up to 20 minutes inside that window. Drafts are kept."
-                icon={<Icon icon={BuildingOffice2Icon} size="md" />}
-                isDismissable
-                dismissLabel="Dismiss maintenance notice"
-                onDismiss={() => setIsNoticeShown(false)}
-                endContent={
-                  <Link href="#" size="sm" weight="medium">
-                    Status page
-                  </Link>
-                }
-              />
-            )}
-            <PicksBand />
-            <Grid columns={{minWidth: 340, max: 2}} gap={3} align="start">
-              <VStack gap={3}>
-                <NewsBand topic={topic} onTopicChange={setTopic} />
-                <TrendingBand />
+        <LayoutContent padding={2} label="ポータル ホーム">
+          {columns === 3 ? (
+            <HStack gap={2} align="start">
+              <VStack gap={2} width={DIRECTORY_WIDTH}>
+                <ServiceDirectory layout="rail" />
+                <EventModule />
               </VStack>
-              <VStack gap={3}>
-                <ServicesBand />
-                <MarketsBand />
-                <WeatherBand />
-              </VStack>
-            </Grid>
-            {!hasRail && (
-              <RailBands
-                layout="spread"
-                board={board}
-                onBoardChange={setBoard}
-              />
-            )}
-          </VStack>
+              <StackItem size="fill">{newsWell}</StackItem>
+              <VStack width={RAIL_WIDTH}>{rail}</VStack>
+            </HStack>
+          ) : columns === 2 ? (
+            <VStack gap={2}>
+              <ServiceDirectory layout="band" />
+              <HStack gap={2} align="start">
+                <StackItem size="fill">{newsWell}</StackItem>
+                <VStack gap={2} width={RAIL_WIDTH}>
+                  {rail}
+                  <EventModule />
+                </VStack>
+              </HStack>
+            </VStack>
+          ) : (
+            <VStack gap={2}>
+              <ServiceDirectory layout="band" />
+              {newsWell}
+              {rail}
+              <EventModule />
+            </VStack>
+          )}
         </LayoutContent>
       }
-      end={
-        hasRail ? (
-          <LayoutPanel
-            width={340}
-            padding={3}
-            hasDivider
-            isScrollable
-            role="complementary"
-            label="Rankings, deals and listings">
-            <RailBands layout="column" board={board} onBoardChange={setBoard} />
-          </LayoutPanel>
-        ) : undefined
-      }
       footer={
-        <LayoutFooter padding={3} hasDivider label="Kiosk footer">
+        <LayoutFooter padding={2} hasDivider label="みなとネット フッター">
           <PortalFooter />
         </LayoutFooter>
       }

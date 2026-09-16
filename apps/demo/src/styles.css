@@ -9,15 +9,29 @@
 @import '@astryxdesign/core/astryx.css';
 
 /*
- * The template is a `Layout` at its default `height="fill"`: it fills its
- * container and scrolls its slots internally. Give it the viewport to fill.
+ * The template is a `Layout` at `height="auto"`: a portal home is a document,
+ * so it grows past the viewport and the window scrolls. `min-height` (not
+ * `height`) is what lets it grow while still filling a short page.
  */
 html,
 body,
 #root {
-  height: 100%;
+  min-height: 100%;
 }
 
 body {
   margin: 0;
+
+  /*
+   * Astryx defines `--font-family-body` but never applies it to the document:
+   * its controls are `font-family: inherit`, so anything outside a component
+   * that sets a family — and every control inside one — inherits the browser
+   * default serif. `defineTheme` has no document-level hook to fix this from
+   * the theme side, so the host applies the theme's own token here. Reading
+   * the token rather than restating the stack is what keeps this honest: with
+   * `?theme=off` the value falls back to Astryx's default family, so the
+   * comparison still shows the theme's typography rather than the theme's
+   * typography twice.
+   */
+  font-family: var(--font-family-body);
 }
