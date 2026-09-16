@@ -1,0 +1,40 @@
+{
+  "name": "astryx-information-maximalist-theme",
+  "version": "1.0.0",
+  "displayName": "Information Maximalist",
+  "description": "Astryx integration package contributing the Information Maximalist page template: a deliberately dense portal home with a search masthead, topic bands, a service directory, ranked lists, and a promo rail.",
+  "license": "MIT",
+  "author": "Ivor Zhou",
+  "homepage": "https://github.com/imdreamrunner/astryx-information-maximalist-theme#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imdreamrunner/astryx-information-maximalist-theme.git"
+  },
+  "bugs": {
+    "url": "https://github.com/imdreamrunner/astryx-information-maximalist-theme/issues"
+  },
+  "keywords": [
+    "astryx",
+    "astryx-integration",
+    "template",
+    "page-template",
+    "portal",
+    "dashboard"
+  ],
+  "type": "module",
+  "files": [
+    "astryx.integration.mjs",
+    "templates",
+    "public",
+    "LICENSE",
+    "README.md"
+  ],
+  "exports": {
+    "./templates/*.tsx": "./templates/*.tsx"
+  },
+  "peerDependencies": {
+    "@astryxdesign/core": ">=0.5.0",
+    "@heroicons/react": "^2.2.0",
+    "react": ">=19.0.0"
+  }
+}
