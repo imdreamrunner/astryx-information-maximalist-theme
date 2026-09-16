@@ -28,14 +28,6 @@ jobs:
           cache: npm
           cache-dependency-path: demo/package-lock.json
 
-      # `enablement: true` creates the Pages site on the first run if it does
-      # not exist yet. `base_path` is the base the demo build must use, and is
-      # read back from the step output below rather than hard-coded twice.
-      - id: pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
       - name: Install
         working-directory: demo
         run: npm ci
@@ -47,6 +39,21 @@ jobs:
       - name: Lint
         working-directory: demo
         run: npm run lint
+
+      # After the code gates, so a run that cannot compile does not reconfigure
+      # the repository's Pages settings on its way to failing.
+      #
+      # `enablement: true` creates the Pages site on the first run if it does
+      # not exist yet; where the workflow token is not allowed to do that, turn
+      # Pages on once under Settings → Pages with "GitHub Actions" as the
+      # source and this step then just reads the existing configuration.
+      #
+      # `base_path` is the base the demo build must use, read back from this
+      # step so the repository name is not hard-coded in two places.
+      - id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Build
         working-directory: demo
