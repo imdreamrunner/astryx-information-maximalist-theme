@@ -11,8 +11,8 @@ independently usable things:
 They are designed to be used together but are not coupled. The template is authored purely against
 Astryx's semantic system — no hex colours, no stylesheets, no class names, no inline styles, and no
 type, spacing or radius values of its own — so the theme restyles it without either one referring to
-the other, and either can be used on its own. The only measurements it states are the widths of its
-two fixed columns, which are composition rather than style.
+the other, and either can be used on its own. The only measurements it states are column widths and
+grid track minimums, which are composition rather than style.
 
 **[▸ Live demo](https://imdreamrunner.github.io/astryx-information-maximalist-theme/)** — the
 template rendered through the theme. Append
@@ -109,6 +109,26 @@ Seven rules, all encoded through public theme APIs — no page-specific CSS:
 Component overrides address theming targets from `astryx theme targets` (`card`, `layout-header`,
 `tab-indicator`, `badge`, `link`, …), which is what makes the system portable rather than tied to
 one page.
+
+#### A note on the fonts
+
+The stack is deliberately system-only — every face in it ships with macOS, Windows, iOS or Android,
+so the theme costs no webfont request and never flashes. `astryx theme build` still warns that the
+theme "names fonts it does not load", because it cannot tell a system face from a missing webfont;
+the warning is expected here rather than a defect.
+
+The gap it points at is real on one platform: a Linux machine with no CJK font installed and no
+fontconfig substitution falls through to `sans-serif` and can render Japanese text as tofu. If you
+need guaranteed coverage, load a webfont in your host — the theme names the faces, the host loads
+them:
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap"
+  rel="stylesheet" />
+```
 
 ## Use the template
 
@@ -225,9 +245,16 @@ deployed; the integration is never published to npm.
 
 ## Source
 
-Template extracted from [facebook/astryx](https://github.com/facebook/astryx) at commit
+This package began as an extraction of the Information Maximalist page template from
+[facebook/astryx](https://github.com/facebook/astryx) at commit
 [`5c6b6f2b0cdb4c187ca9174f6e993307f2b51ee7`](https://github.com/facebook/astryx/commit/5c6b6f2b0cdb4c187ca9174f6e993307f2b51ee7),
-repackaged as a standalone installable integration. The theme is original to this repository.
+repackaged as a standalone installable integration.
+
+The template has since been rewritten: its composition and all of its copy are original to this
+repository, and the copy is fiction — the portal, its services, its headlines, its quotes and its
+place names do not exist. The theme is original to this repository too. What remains from the
+extraction is the imagery in `public/template-assets/`, which is Astryx's own stock template asset
+set.
 
 ## License
 
