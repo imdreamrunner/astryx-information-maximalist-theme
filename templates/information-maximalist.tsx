@@ -28,8 +28,8 @@
  * Responsive in three steps, each one measured against the template's own
  * surface rather than the window (see {@link useSurfaceWidth}):
  *
- * - Wide (>= 1040px): three columns — directory, news well, rail.
- * - Medium (880–1039px): two columns. The service directory unfolds from a
+ * - Wide (>= 960px): three columns — directory, news well, rail.
+ * - Medium (880–959px): two columns. The service directory unfolds from a
  *   vertical rail into a wrapped band of links above the columns, which is the
  *   one module that reads equally well either way, so the news well and the
  *   rail both keep a usable measure.
@@ -113,17 +113,23 @@ import {
 // =============================================================================
 
 /**
- * Above this surface width the page runs three columns. 1040 is where the
- * directory rail, a news well wide enough for a headline on one line, and a
- * 300px rail stop fitting together — below it one of the three always starves,
+ * Above this surface width the page runs three columns. 960 is where the
+ * directory rail, a news well wide enough for a headline on one line, and the
+ * right rail stop fitting together — below it one of the three always starves,
  * and the directory is the one that survives being folded.
+ *
+ * It is set low on purpose. The three-column portal is the whole arrangement,
+ * so the threshold is pushed down to the narrowest width at which the middle
+ * column still holds a one-line headline (see the widths below) rather than to
+ * a comfortable one: a reader on a 1024 laptop should get the portal, not the
+ * folded version of it.
  */
-const THREE_COLUMN_SURFACE = 1040;
+const THREE_COLUMN_SURFACE = 960;
 
 /**
  * Above this width the news well and the rail stay side by side. 880 is set by
- * the rail, not the well: the rail is a fixed 312, so anything narrower leaves
- * the well under ~550 and its headlines start taking two lines each with the
+ * the rail, not the well: the rail is a fixed 332, so anything narrower leaves
+ * the well under ~530 and its headlines start taking two lines each with the
  * comment count orphaned onto a third. One wide column of one-line headlines
  * beats two columns of wrapped ones, so below this the rail goes underneath.
  */
@@ -140,9 +146,15 @@ const TWO_COLUMN_SURFACE = 880;
  */
 const NARROW_SURFACE = 720;
 
-/** Widths of the two fixed columns; the news well takes what is left. */
-const DIRECTORY_WIDTH = 188;
-const RAIL_WIDTH = 312;
+/**
+ * Widths of the two fixed columns; the news well takes what is left.
+ *
+ * Sized against a ~1000px sheet: 176 is a service label plus its icon and no
+ * more, 332 leaves the rail room for a two-across forecast, and the remaining
+ * ~460 in the middle is the reading column the whole page is built around.
+ */
+const DIRECTORY_WIDTH = 176;
+const RAIL_WIDTH = 332;
 
 /**
  * The width of the box this template was given, tracked as it changes.

@@ -30,11 +30,13 @@
  * 3. **Square corners.** Radii collapse to 0–3px. Rounded corners cost
  *    horizontal room at small sizes and blur the grid the modules sit on.
  * 4. **Two surfaces, one hue.** White for content, a pale blue-grey for utility
- *    chrome — navigation rails, search wells, tab troughs. The tint is what
+ *    chrome — navigation rails, search wells, module headers. The tint is what
  *    tells a reader which parts of the page are furniture.
- * 5. **Blue is the link colour.** Saturated, accessible, and load-bearing:
- *    on a page that is mostly text links, the accent is the primary wayfinding
- *    device, so it is not spent on decoration.
+ * 5. **Blue is the link colour, red is the alarm.** The accent is saturated,
+ *    accessible and load-bearing: on a page that is mostly text links it is the
+ *    primary wayfinding device, so it is not spent on decoration. Exactly one
+ *    other hue is allowed — a red for the values a reader is scanning *for* —
+ *    and it stays rare enough to keep meaning something.
  * 6. **Density follows the viewport.** Encoded as `adaptations` rather than
  *    page media queries, so any consumer inherits it.
  *
@@ -90,8 +92,8 @@ const ACCENT: [light: string, dark: string] = ['#1046BE', '#8CB8F2'];
  * contrast to recede, high enough to survive a non-colour-managed display —
  * which is where 1px rules on white usually disappear.
  */
-const HAIRLINE: [light: string, dark: string] = ['#C2CEE0', '#333B47'];
-const HAIRLINE_STRONG: [light: string, dark: string] = ['#9AAECB', '#48525F'];
+const HAIRLINE: [light: string, dark: string] = ['#ABB3C8', '#333B47'];
+const HAIRLINE_STRONG: [light: string, dark: string] = ['#8795AE', '#48525F'];
 
 /**
  * Surfaces. Content sits on white and furniture sits on a pale blue-grey, so
@@ -103,7 +105,23 @@ const HAIRLINE_STRONG: [light: string, dark: string] = ['#9AAECB', '#48525F'];
  */
 const SURFACE_BODY: [light: string, dark: string] = ['#FFFFFF', '#0E1116'];
 const SURFACE_CARD: [light: string, dark: string] = ['#FFFFFF', '#151A21'];
-const SURFACE_MUTED: [light: string, dark: string] = ['#EDF2FA', '#1A202A'];
+const SURFACE_MUTED: [light: string, dark: string] = ['#E8ECF7', '#1A202A'];
+
+/**
+ * The status reds and the flag amber.
+ *
+ * A portal spends colour on two things only: the link, and the handful of
+ * values a reader is scanning *for* — a count that has run away, a temperature,
+ * a "new" flag. Both are pinned here rather than left at the stock semantic
+ * palette, because the stock reds and yellows are tuned for alert banners that
+ * occupy a whole row; at 12px, inside a list, they need more ink to register
+ * and less area to sit in. The amber is a fill with dark text rather than the
+ * usual light-text-on-saturated, which is what keeps a 12px flag legible.
+ */
+const STATUS_RED: [light: string, dark: string] = ['#B81E26', '#F0909A'];
+const STATUS_RED_FILL: [light: string, dark: string] = ['#C2181F', '#B3141B'];
+const FLAG_AMBER: [light: string, dark: string] = ['#FFAF00', '#E5A000'];
+const FLAG_AMBER_TEXT: [light: string, dark: string] = ['#3D2B00', '#2B1E00'];
 
 /** The 1px rule, named once so the component overrides below read as a set. */
 const RULE = 'var(--border-width) solid var(--color-border)';
@@ -239,6 +257,18 @@ export const informationMaximalistTheme = defineTheme({
     '--color-text-secondary': ['#4A5666', '#AFBACA'],
     '--color-icon-secondary': ['#5A6675', '#9BA7B7'],
 
+    // --- Status: the two colours that are not the link --------------------
+    // See STATUS_RED above. `text-red` is the scanning colour — a runaway
+    // count, a high temperature — and it is the only hue on the page besides
+    // the accent, which is what keeps it meaning "look here". The solid fills
+    // below are the badge variants: error stays red, warning becomes the
+    // portal's amber flag with dark text on it.
+    '--color-text-red': STATUS_RED,
+    '--color-icon-red': STATUS_RED,
+    '--color-error': STATUS_RED_FILL,
+    '--color-warning': FLAG_AMBER,
+    '--color-on-warning': FLAG_AMBER_TEXT,
+
     // --- Corners: squared -------------------------------------------------
     // `radius` handles the element/inner/container steps; these two are the
     // ones its multiplier cannot reach far enough down.
@@ -278,16 +308,19 @@ export const informationMaximalistTheme = defineTheme({
     // consumer for a global rule is what makes the stack part of the theme.
     //
     // The shell is also bounded and centred. A portal is read as a sheet, not
-    // as a wall: past about 1100px the eye stops being able to scan a row of
+    // as a wall: past about 1000px the eye stops being able to scan a row of
     // modules, and a full-bleed version of this layout stretches its text
-    // columns instead of adding any information. Expressed as a `max-width` on
-    // the shell so it holds for any composition, and as `auto` margins so the
+    // columns instead of adding any information. 1000 is deliberate rather
+    // than round — it is the width at which three columns of this kind still
+    // hold a ~460px reading column in the middle, which is the measure the
+    // whole arrangement is built around. Expressed as a `max-width` on the
+    // shell so it holds for any composition, and as `auto` margins so the
     // sheet centres in whatever the host gives it.
     layout: {
       base: {
         fontFamily: `${FONT_FAMILY}, ${FONT_FALLBACKS}`,
         backgroundColor: 'var(--color-background-body)',
-        maxWidth: '1120px',
+        maxWidth: '1000px',
         marginInline: 'auto',
       },
     },
@@ -374,35 +407,44 @@ export const informationMaximalistTheme = defineTheme({
     },
 
     // -- Tabs -------------------------------------------------------------
-    // The utilitarian tab bar: a trough of tinted, ruled-off tabs with the
-    // selected one cut out in white so it joins the panel below it. This is
-    // the portal's own idiom and it earns its place at this density — a row of
-    // nine sections fits in 28px of height and still says which one is open
-    // twice over, by tone and by weight.
+    // The utilitarian tab bar: a row of plain text sitting directly on the
+    // module's own surface, divided by hairlines and closed by one rule
+    // underneath. No trough, no pills, no filled selected tab.
+    //
+    // This is what a portal's section switcher actually is — a list of links,
+    // one of which you are already on — and at this density it is also the
+    // only version that fits: nine sections in 28px of height, with no chrome
+    // between the tab row and the first headline under it. An unselected tab
+    // is a link and wears the accent; the selected one drops the accent and
+    // takes bold near-black, so the row says where you are by both colour and
+    // weight rather than by a filled shape.
     'tab-list': {
       base: {borderBottom: RULE},
     },
     tab: {
       base: {
         borderRadius: '0px',
-        fontWeight: 'var(--font-weight-medium)',
-        backgroundColor: 'var(--color-background-muted)',
-        // Tabs butt against each other and are told apart by a hairline, not
-        // by a gap. `-1px` collapses each pair of adjacent edges into the one
-        // rule a reader should see.
-        borderInlineEnd: RULE,
-        marginInlineEnd: '-1px',
+        backgroundColor: 'transparent',
+        fontWeight: 'var(--font-weight-normal)',
         color: 'var(--color-text-accent)',
+        paddingInline: 'var(--spacing-3)',
+        // The divider belongs *between* tabs, so it hangs off the start edge
+        // and the first tab gives its own back — otherwise the row opens with
+        // a stray rule floating against the module's left border.
+        borderInlineStart: RULE,
+        ':first-child': {borderInlineStart: 'none'},
       },
       // Bare key, not `state:selected` — states are addressed by name.
       selected: {
         fontWeight: 'var(--font-weight-bold)',
-        backgroundColor: 'var(--color-background-surface)',
         color: 'var(--color-text-primary)',
       },
     },
     'tab-indicator': {
-      // A 2px underline, not a pill: it marks a column of the grid.
+      // A 2px underline, not a pill: it marks a column of the grid. It is the
+      // one piece of the stock tab treatment worth keeping, because weight and
+      // colour alone leave the selected tab unmarked for a reader who cannot
+      // resolve either.
       base: {height: '2px', borderRadius: '0px'},
     },
 
