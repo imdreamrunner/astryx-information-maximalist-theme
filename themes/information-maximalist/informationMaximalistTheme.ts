@@ -419,7 +419,23 @@ export const informationMaximalistTheme = defineTheme({
     // takes bold near-black, so the row says where you are by both colour and
     // weight rather than by a filled shape.
     'tab-list': {
-      base: {borderBottom: RULE},
+      base: {
+        borderBottom: RULE,
+        // Astryx reserves a 4px gap above that rule so a hover pill never
+        // touches it. This system has no pill to protect, and the gap is the
+        // one thing that stops the row from reading as a ruled tab bar: the
+        // tabs float 4px clear of their own underline, which at a 24px tab
+        // height is a visible band of nothing between the label and the line
+        // that is supposed to close it. Taken back to zero so the row sits on
+        // the rule, the way the header and footer sit on theirs.
+        paddingBlockEnd: '0px',
+        // The reserved gap also drops the selected indicator through it, so
+        // the indicator has to come back up by the same amount. `-1px` is
+        // Astryx's own no-gap value: the indicator overlays the rule rather
+        // than sitting above it, which is what keeps the selected column
+        // marked for a reader who cannot resolve colour or weight.
+        '--_tab-indicator-bottom': 'calc(-1 * var(--border-width))',
+      },
     },
     tab: {
       base: {
