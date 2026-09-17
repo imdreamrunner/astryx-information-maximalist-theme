@@ -85,10 +85,10 @@ astryx theme build ./src/theme/informationMaximalistTheme.ts -o ./src/theme/them
 
 Eight rules, all encoded through public theme APIs — no page-specific CSS:
 
-1. **Dense type, CJK-safe** — 14px base on a shallow 1.08 ratio, so eight levels of hierarchy fit
-   between 12px and 16px, with every leading pinned into 1.36–1.43. The family stack leads with the
-   system UI faces and then the Japanese ones (`Hiragino Kaku Gothic ProN`, `Yu Gothic`,
-   `Noto Sans JP`), because a portal at this size is unreadable in a fallback serif.
+1. **Dense type** — 14px base on a shallow 1.08 ratio, so eight levels of hierarchy fit between
+   12px and 16px, with every leading pinned into 1.36–1.43. The family stack is the platform UI
+   face and nothing else (`-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, `Roboto`,
+   `Helvetica Neue`, `Arial`), because a portal at this size is unreadable in a fallback serif.
 2. **Compressed space** — steps 1–4 are left at a canonical 4/8/12/16 rhythm, which is what a dense
    layout actually gauges itself against; only the larger steps are pulled in, so nothing above the
    fold spends space on air.
@@ -120,20 +120,21 @@ one page.
 #### A note on the fonts
 
 The stack is deliberately system-only — every face in it ships with macOS, Windows, iOS or Android,
-so the theme costs no webfont request and never flashes. `astryx theme build` still warns that the
-theme "names fonts it does not load", because it cannot tell a system face from a missing webfont;
-the warning is expected here rather than a defect.
+and every one is on `astryx theme build`'s preinstalled list, so the build raises no
+"names fonts it does not load" notice, the theme costs no webfont request, and nothing flashes on
+first paint.
 
-The gap it points at is real on one platform: a Linux machine with no CJK font installed and no
-fontconfig substitution falls through to `sans-serif` and can render Japanese text as tofu. If you
-need guaranteed coverage, load a webfont in your host — the theme names the faces, the host loads
-them:
+One platform is still worth knowing about: a bare Linux machine with none of these families
+installed and no fontconfig substitution falls through to generic `sans-serif`, which is whatever
+that machine happens to have. The metrics hold — the theme pins its own sizes and leadings — but
+the face is not the one you designed against. If you need a guaranteed face, load a webfont in your
+host and put it at the front of the stack:
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
-  href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Inter&display=swap"
   rel="stylesheet" />
 ```
 
@@ -150,17 +151,18 @@ project has those asset files. The masthead's `/astryx-logo.svg` is not among th
 mark, and there is no placeholder to stand in for one — so copy that one file out of the package's
 `public/` into the host's own public directory, or point the `<img>` at wherever the host keeps it.
 
-The page is a portal home in the East Asian style, and its content is original fictional Japanese
-copy throughout — a two-row masthead over a tinted search well, then three unequal columns of ruled
+The page is a high-density portal home, and its content is original fictional US English copy
+throughout — a two-row masthead over a tinted search well, then three unequal columns of ruled
 modules: a service directory rail, headlines under section tabs, and a rail of sign-in, forecast,
-index quotes and access rankings. It is built from bulleted text links carrying comment counts and
-status flags rather than from cards, with imagery rationed to one focal image per module.
+index quotes and most-popular rankings. It is built from bulleted text links carrying comment
+counts and status flags rather than from cards, with imagery rationed to one focal image per
+module.
 
 Every row whose content is a piece of writing you open and read is the same `ArticleRow`: a flush
 bullet in the body ink, the headline at the page's 14px body size, and its metadata inside one
 row-wide anchor, so any point in the row is a hit, nothing is tinted behind it, and the hover
-underline marks the headline alone. Five runs take it — the news feed, 特集・コラム, both columns of
-地域のお知らせ, みんなの質問 and アクセスランキング, which swaps the bullet for the `<ol>`'s ordinal.
+underline marks the headline alone. Five runs take it — the news feed, Features & Columns, both
+columns of City Notices, Answers and Most Popular, which swaps the bullet for the `<ol>`'s ordinal.
 The page's other runs are deliberately not headline rows and keep their own: the service directory,
 the market quotes, the keyword cloud and the dated event listings. The template's `Article rows`
 section lists which are which, and why.
@@ -293,7 +295,7 @@ The mark is the current official Astryx brand mark and is not redrawn here, so t
 verifiable: `sha256sum` it against the upstream path. It is the docsite's brand asset, which is the
 same artwork the docsite's `logos.tsx` inlines as `AstryxIcon`; the public file is the form this
 template wants, because an `<img>` cannot inherit `currentColor` the way that inline path does, and
-the file carries the brand blue itself. It renders before the Japanese wordmark with `alt=""` — the
+the file carries the brand blue itself. It renders before the `Astryx` wordmark with `alt=""` — the
 `<h1>` beside it already carries the site's name, so naming the image too would announce that name
 twice.
 

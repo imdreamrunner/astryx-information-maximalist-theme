@@ -6,8 +6,8 @@
  * Information Maximalist — a portal home page that puts everything above the
  * fold.
  *
- * The model is the East Asian web portal, and the composition is what makes it
- * one: a bounded sheet, a two-row masthead over a tinted search well, then
+ * The model is the high-density news portal, and the composition is what makes
+ * it one: a bounded sheet, a two-row masthead over a tinted search well, then
  * three unequal columns of ruled modules — a service directory, a news module
  * under section tabs, and a rail of weather, markets and rankings. Where a
  * dashboard spends its width on a few large figures, a portal spends it on many
@@ -205,16 +205,16 @@ function useSurfaceWidth() {
 // =============================================================================
 // Fixtures
 //
-// アストリクス is an invented site for the invented city of 潮見; every name,
-// headline, figure, source and date below is fictional.
+// Astryx is an invented site for the invented American port city of Harborview;
+// every name, headline, figure, source and date below is fictional.
 // =============================================================================
 
 /** The thin utility strip above the masthead. */
 const UTILITY_LINKS: readonly string[] = [
-  'ホームに設定',
-  'こども向け',
-  'アプリ',
-  'ヘルプ',
+  'Set as homepage',
+  'Kids',
+  'Apps',
+  'Help',
 ];
 
 interface ShortcutTile {
@@ -224,66 +224,66 @@ interface ShortcutTile {
 
 /** Icon shortcuts flanking the wordmark, three to a side. */
 const MASTHEAD_START: readonly ShortcutTile[] = [
-  {label: 'ショッピング', icon: BuildingStorefrontIcon},
-  {label: 'オークション', icon: TagIcon},
-  {label: 'フリマ', icon: GiftIcon},
+  {label: 'Shopping', icon: BuildingStorefrontIcon},
+  {label: 'Auctions', icon: TagIcon},
+  {label: 'Marketplace', icon: GiftIcon},
 ];
 
 const MASTHEAD_END: readonly ShortcutTile[] = [
-  {label: 'トラベル', icon: PaperAirplaneIcon},
-  {label: 'カード', icon: CreditCardIcon},
-  {label: 'メール', icon: EnvelopeIcon},
+  {label: 'Travel', icon: PaperAirplaneIcon},
+  {label: 'Cards', icon: CreditCardIcon},
+  {label: 'Mail', icon: EnvelopeIcon},
 ];
 
 /** Search scopes. The first is the active one. */
 const SEARCH_SCOPES: readonly string[] = [
-  'ウェブ',
-  '画像',
-  '動画',
-  '地図',
-  'ニュース',
-  '辞典',
-  '一覧',
+  'Web',
+  'Images',
+  'Video',
+  'Maps',
+  'News',
+  'Dictionary',
+  'More',
 ];
 
 /** The two announcement links under the search well. */
 const PROMO_LINKS: readonly string[] = [
-  '秋の交通ダイヤ改正まとめ',
-  'メール障害のお知らせと復旧状況',
+  'Fall transit schedule changes, explained',
+  'Mail outage notice and restoration status',
 ];
 
 /** The service directory rail — a portal's whole surface area, spelled out. */
 const SERVICE_DIRECTORY: readonly ShortcutTile[] = [
-  {label: 'ショッピング', icon: BuildingStorefrontIcon},
-  {label: 'オークション', icon: TagIcon},
-  {label: 'フリマ', icon: GiftIcon},
-  {label: 'トラベル', icon: PaperAirplaneIcon},
-  {label: 'グルメ', icon: CakeIcon},
-  {label: 'ふるさと納税', icon: HomeModernIcon},
-  {label: '宅配', icon: TruckIcon},
-  {label: 'ニュース', icon: NewspaperIcon},
-  {label: '天気・災害', icon: CloudIcon},
-  {label: 'スポーツ', icon: TrophyIcon},
-  {label: 'ファイナンス', icon: BanknotesIcon},
-  {label: '番組表', icon: TvIcon},
-  {label: 'みんなの質問', icon: ChatBubbleLeftEllipsisIcon},
-  {label: '地図', icon: MapIcon},
-  {label: '求人', icon: BriefcaseIcon},
-  {label: 'ゲーム', icon: PuzzlePieceIcon},
-  {label: '電子書籍', icon: BookOpenIcon},
-  {label: 'カレンダー', icon: CalendarDaysIcon},
+  {label: 'Shopping', icon: BuildingStorefrontIcon},
+  {label: 'Auctions', icon: TagIcon},
+  {label: 'Marketplace', icon: GiftIcon},
+  {label: 'Travel', icon: PaperAirplaneIcon},
+  {label: 'Dining', icon: CakeIcon},
+  {label: 'Local Giving', icon: HomeModernIcon},
+  {label: 'Delivery', icon: TruckIcon},
+  {label: 'News', icon: NewspaperIcon},
+  {label: 'Weather & Alerts', icon: CloudIcon},
+  {label: 'Sports', icon: TrophyIcon},
+  {label: 'Finance', icon: BanknotesIcon},
+  {label: 'TV Guide', icon: TvIcon},
+  {label: 'Answers', icon: ChatBubbleLeftEllipsisIcon},
+  {label: 'Maps', icon: MapIcon},
+  {label: 'Jobs', icon: BriefcaseIcon},
+  {label: 'Games', icon: PuzzlePieceIcon},
+  {label: 'E-books', icon: BookOpenIcon},
+  {label: 'Calendar', icon: CalendarDaysIcon},
 ];
 
 interface Headline {
   title: string;
   /** Comment count. Rendered as an alert chip once it runs into four figures. */
   comments: number;
-  /** Optional status flag: NEW for new, 速報 for breaking. */
+  /** Optional status flag: NEW for new, BREAKING for breaking. */
   flag?: {label: string; tone: 'new' | 'breaking'};
 }
 
 interface NewsFeed {
-  /** Stamp above the list, in the portal's usual 月/日(曜) 時:分 form. */
+  /** Stamp above the list, in the portal's usual Day M/D, h:mm AM form. */
   updated: string;
   headlines: readonly Headline[];
   /** The module's single focal image. */
@@ -297,316 +297,333 @@ interface NewsFeed {
 }
 
 const NEWS_TABS: readonly {id: string; label: string}[] = [
-  {id: 'main', label: '主要'},
-  {id: 'domestic', label: '国内'},
-  {id: 'world', label: '国際'},
-  {id: 'economy', label: '経済'},
-  {id: 'tech', label: 'IT・科学'},
-  {id: 'sports', label: 'スポーツ'},
-  {id: 'life', label: '暮らし'},
-  {id: 'local', label: '地域'},
+  {id: 'main', label: 'Top'},
+  {id: 'domestic', label: 'Nation'},
+  {id: 'world', label: 'World'},
+  {id: 'economy', label: 'Business'},
+  {id: 'tech', label: 'Tech & Science'},
+  {id: 'sports', label: 'Sports'},
+  {id: 'life', label: 'Life'},
+  {id: 'local', label: 'Local'},
 ];
 
 const NEWS_FEEDS: Record<string, NewsFeed> = {
   main: {
-    updated: '9/17(木) 6:30更新',
+    updated: 'Updated Thu 9/17, 6:30 AM',
     headlines: [
       {
-        title: '深夜バス14便を増発 通勤実態調査うけ',
+        title: 'Transit adds 14 late-night bus trips after commuter survey',
         comments: 238,
         flag: {label: 'NEW', tone: 'new'},
       },
-      {title: '野菜の値下がり3カ月連続 供給が回復', comments: 176},
-      {title: '海水冷却で消費電力31%減 実証実験おわる', comments: 87},
+      {title: 'Grocery prices ease a third month as supply recovers', comments: 176},
+      {title: 'Seawater cooling cuts power draw 31% in city pilot', comments: 87},
       {
-        title: '高架橋の補修が完了 予定より9週間早く',
+        title: 'Viaduct repair finishes nine weeks ahead of schedule',
         comments: 41,
         flag: {label: 'NEW', tone: 'new'},
       },
-      {title: '木曜夕方から内陸で大雨のおそれ 気象台', comments: 512},
-      {title: '秋季代表23人を発表 初選出は2人', comments: 1240},
+      {title: 'Heavy rain likely inland from Thursday evening', comments: 512},
+      {title: 'National squad names 23 players for the fall series', comments: 1240},
       {
-        title: '空き家改修の助成 申請受付をきょう開始',
+        title: 'Empty-home renovation grant opens for applications today',
         comments: 63,
         flag: {label: 'NEW', tone: 'new'},
       },
-      {title: '宅配の時間帯的中率 公表を各社に要請', comments: 95},
+      {title: 'Regulator asks parcel carriers to publish window accuracy', comments: 95},
     ],
     focal: {
-      caption: '夜間の整備ヤードで',
-      stamp: '9/16(水) 18:20',
-      source: 'みなと通信',
+      caption: 'Inside the night maintenance yard',
+      stamp: 'Wed 9/16, 6:20 PM',
+      source: 'Harbor Wire',
       image: '/template-assets/moody-working-horizontal-1.png',
-      alt: '夜間の鉄道ホームで保線作業にあたる作業員',
+      alt: 'Maintenance crew working on a rail platform at night',
     },
   },
   domestic: {
-    updated: '9/17(木) 6:24更新',
+    updated: 'Updated Thu 9/17, 6:24 AM',
     headlines: [
       {
-        title: '空き家改修の助成 3000世帯を上限に受付',
+        title: 'Empty-home grant caps applications at 3,000 households',
         comments: 148,
         flag: {label: 'NEW', tone: 'new'},
       },
-      {title: '学校給食の無償化 4月から2地区に拡大', comments: 96},
-      {title: '深夜バス88系統が本格運行へ 9カ月の試行おわる', comments: 58},
-      {title: 'インフルエンザ予防接種 65歳以上の予約開始', comments: 33},
-      {title: '市民マラソンの抽選 14万2000人が応募', comments: 271},
-      {title: '沿岸風力の環境審査が終了 着工は来春', comments: 149},
-      {title: '図書館の延滞料 児童書で廃止へ', comments: 24},
-      {title: '県営住宅の家賃減免 申請書類を簡素化', comments: 37},
+      {title: 'School lunch program extends to two more districts in April', comments: 96},
+      {title: 'Night bus 88 becomes permanent after nine-month trial', comments: 58},
+      {title: 'Flu shot appointments open for residents over 65', comments: 33},
+      {title: 'City marathon lottery draws 142,000 entries', comments: 271},
+      {title: 'Coastal wind farm clears its final environmental review', comments: 149},
+      {title: 'Library system drops overdue fines on children’s books', comments: 24},
+      {title: 'Rent relief for public housing cuts its paperwork', comments: 37},
     ],
     focal: {
-      caption: '静かな住宅地の一角',
-      stamp: '9/16(水) 15:40',
-      source: '潮見タイムズ',
+      caption: 'A quiet block on the north side',
+      stamp: 'Wed 9/16, 3:40 PM',
+      source: 'Harborview Times',
       image: '/template-assets/light-home-horizontal-1.png',
-      alt: '低層の住宅がならぶ静かな通り',
+      alt: 'Low houses along a quiet residential street',
     },
   },
   world: {
-    updated: '9/17(木) 6:18更新',
+    updated: 'Updated Thu 9/17, 6:18 AM',
     headlines: [
       {
-        title: '港湾ストが終結 人員確保の保証で合意',
+        title: 'Port strike ends with a staffed-lane guarantee',
         comments: 204,
-        flag: {label: '速報', tone: 'breaking'},
+        flag: {label: 'BREAKING', tone: 'breaking'},
       },
-      {title: 'コンテナ滞留 11日で解消の見通し', comments: 77},
-      {title: '越境鉄道が有料運行1カ月 利用は想定の8割', comments: 61},
-      {title: '東部流域の干ばつ警戒度を1段引き下げ', comments: 45},
-      {title: '中央銀行が金利を据え置き 成長見通しは下方修正', comments: 302},
-      {title: '小麦の輸出見通し 2期連続で上方修正', comments: 58},
-      {title: '2都市が広場の暑さ対策で共同計画に署名', comments: 38},
-      {title: '海底ケーブルの修復完了 予定より1週間早く', comments: 112},
+      {title: 'Container backlog expected to clear within 11 days', comments: 77},
+      {title: 'Cross-border rail ends its first paid month at 80% of forecast', comments: 61},
+      {title: 'Drought monitor lowers its alert level for the eastern basin', comments: 45},
+      {title: 'Central bank holds rates and trims its growth forecast', comments: 302},
+      {title: 'Wheat exporters lift shipment estimates a second quarter', comments: 58},
+      {title: 'Two cities sign a shared plan for cooling public squares', comments: 38},
+      {title: 'Undersea cable repair finishes a week ahead of plan', comments: 112},
     ],
     focal: {
-      caption: '稼働がもどった埠頭',
-      stamp: '9/16(水) 20:05',
-      source: '北町ポスト',
+      caption: 'A working pier, back at capacity',
+      stamp: 'Wed 9/16, 8:05 PM',
+      source: 'Northline Post',
       image: '/template-assets/moody-scene-horizontal-2.png',
-      alt: '稼働する港のコンテナクレーン',
+      alt: 'Container cranes at a working port',
     },
   },
   economy: {
-    updated: '9/17(木) 6:12更新',
+    updated: 'Updated Thu 9/17, 6:12 AM',
     headlines: [
       {
-        title: '食品チェーンが加盟店210店を買収 二重価格を解消',
+        title: 'Grocery chain buys 210 franchise stores to end dual pricing',
         comments: 186,
         flag: {label: 'NEW', tone: 'new'},
       },
-      {title: '宅配大手が黒字転換 3年ぶり', comments: 54},
-      {title: '地銀が12支店を再開 2年前の閉鎖分', comments: 89},
-      {title: '潮見便に2便目を増設 航空会社が発表', comments: 27},
-      {title: '半導体後工程に600億円 内陸2工場目', comments: 163},
-      {title: '小売の最低賃金4.1%上げ 業種協定で妥結', comments: 341},
-      {title: '電気料金の還付 冬の請求期間まで延長', comments: 205},
-      {title: '長期金利が小幅上昇 3カ月ごとの調整観測で', comments: 118},
+      {title: 'Parcel carrier posts a profit for the first time in three years', comments: 54},
+      {title: 'Regional lender reopens 12 branches it closed two years ago', comments: 89},
+      {title: 'Airline adds a second daily Harborview flight', comments: 27},
+      {title: 'Chip packager commits $600M to a second inland plant', comments: 163},
+      {title: 'Retail wage floor rises 4.1% under the new sector deal', comments: 341},
+      {title: 'Electricity rebate extended through the winter billing period', comments: 205},
+      {title: 'Long-term yields edge up on quarterly rebalancing', comments: 118},
     ],
     focal: {
-      caption: '棚の補充がすすむ売り場',
-      stamp: '9/16(水) 17:10',
-      source: '台帳経済',
+      caption: 'Restocking the aisles before open',
+      stamp: 'Wed 9/16, 5:10 PM',
+      source: 'Ledger Daily',
       image: '/template-assets/light-working-horizontal-2.png',
-      alt: 'スーパーマーケットの棚を補充する従業員',
+      alt: 'Shop assistant restocking a supermarket aisle',
     },
   },
   tech: {
-    updated: '9/17(木) 6:06更新',
+    updated: 'Updated Thu 9/17, 6:06 AM',
     headlines: [
       {
-        title: '海水冷却でデータホールの電力31%減 実証で',
+        title: 'Seawater cooling cuts a data hall’s power draw 31% in testing',
         comments: 141,
         flag: {label: 'NEW', tone: 'new'},
       },
-      {title: '交通アプリがオフライン時刻表に対応', comments: 71},
-      {title: '公開気象データに沿岸40年分を追加', comments: 46},
-      {title: '端末メーカーが7年間の更新提供を約束', comments: 258},
-      {title: '遅延予測モデルを公開 鉄道事業者', comments: 134},
-      {title: 'ストレージ価格 4期連続で下落', comments: 63},
-      {title: '2大学がキャンパス網の試験環境を共用', comments: 19},
-      {title: '観測衛星の小型化 打ち上げ費用は3割減', comments: 88},
+      {title: 'Transit app ships offline timetables', comments: 71},
+      {title: 'Open forecast dataset adds 40 years of coastal readings', comments: 46},
+      {title: 'Handset maker promises seven years of security updates', comments: 258},
+      {title: 'Rail operator publishes its delay-prediction model', comments: 134},
+      {title: 'Storage prices fall a fourth consecutive quarter', comments: 63},
+      {title: 'Two universities share a campus network testbed', comments: 19},
+      {title: 'Smaller observation satellites cut launch costs 30%', comments: 88},
     ],
     focal: {
-      caption: '冷却配管の点検',
-      stamp: '9/16(水) 16:45',
-      source: '北町ポスト',
+      caption: 'Checking the cooling loop',
+      stamp: 'Wed 9/16, 4:45 PM',
+      source: 'Northline Post',
       image: '/template-assets/colorful-working-horizontal-2.png',
-      alt: 'サーバー室で冷却配管を点検する技術者',
+      alt: 'Engineer inspecting cooling pipework in a server hall',
     },
   },
   sports: {
-    updated: '9/17(木) 6:00更新',
+    updated: 'Updated Thu 9/17, 6:00 AM',
     headlines: [
       {
-        title: '潮見が2-1で逃げきる アウェー4連勝',
+        title: 'Harborview hold on for a 2–1 win and a fourth straight away',
         comments: 486,
-        flag: {label: '速報', tone: 'breaking'},
+        flag: {label: 'BREAKING', tone: 'breaking'},
       },
-      {title: '秋季代表23人 ベテラン2人が落選', comments: 1240},
-      {title: '200m自由形で0.34秒短縮 記録更新', comments: 92},
-      {title: 'マラソン経路を変更 高架橋工事を回避', comments: 57},
-      {title: '来季から26チーム制を承認 リーグ理事会', comments: 613},
-      {title: '山岳ステージで41kmの独走 単独首位', comments: 88},
-      {title: 'センターと2年契約 バスケ潮見', comments: 44},
-      {title: '女子駅伝の区間編成を見直し 全6区に', comments: 76},
+      {title: 'Fall series squad leaves out two veterans', comments: 1240},
+      {title: 'Swimmer takes the 200m freestyle record by 0.34 seconds', comments: 92},
+      {title: 'Marathon course reroutes around the viaduct work', comments: 57},
+      {title: 'League approves a 26-team format from next season', comments: 613},
+      {title: 'Cyclist wins the hill stage after a 25-mile solo break', comments: 88},
+      {title: 'Basketball side signs a center to a two-year deal', comments: 44},
+      {title: 'Women’s relay redrawn into six legs', comments: 76},
     ],
     focal: {
-      caption: 'スタンドの歓声',
-      stamp: '9/16(水) 21:30',
-      source: 'サイドライン',
+      caption: 'Noise from the north stand',
+      stamp: 'Wed 9/16, 9:30 PM',
+      source: 'Sideline',
       image: '/template-assets/colorful-lifestyle-horizontal-1.png',
-      alt: 'スタジアムのスタンドで歓声をあげるサポーター',
+      alt: 'Supporters cheering in a stadium stand',
     },
   },
   life: {
-    updated: '9/17(木) 5:54更新',
+    updated: 'Updated Thu 9/17, 5:54 AM',
     headlines: [
       {
-        title: '9リットルの備蓄棚 ひとり分を無駄なく',
+        title: 'The two-gallon pantry: cooking for one without the waste',
         comments: 64,
         flag: {label: 'NEW', tone: 'new'},
       },
-      {title: '難しい一角は最後に植える 庭づくりの順番', comments: 36},
-      {title: '1日乗車券で行ける小さな山歩き5選', comments: 74},
-      {title: '時間指定をやめた美術館で起きたこと', comments: 51},
-      {title: '交代勤務の睡眠 平易な手引きを公開', comments: 118},
-      {title: '年間1900個のやかんを直した修理喫茶', comments: 82},
-      {title: '長い通勤のための読書リスト 運転士が選ぶ', comments: 29},
-      {title: '2平方メートルの台所 収納の考え方', comments: 47},
+      {title: 'A gardener’s case for planting the difficult corner last', comments: 36},
+      {title: 'Five short hikes you can reach on a day pass', comments: 74},
+      {title: 'What changed when the museum dropped timed entry', comments: 51},
+      {title: 'Sleep clinic publishes a plain-language shift-work guide', comments: 118},
+      {title: 'The repair café that fixed 1,900 kettles in a year', comments: 82},
+      {title: 'A reading list for the long commute, chosen by drivers', comments: 29},
+      {title: 'How to think about storage in a 22-square-foot kitchen', comments: 47},
     ],
     focal: {
-      caption: '台所の作業台で',
-      stamp: '9/16(水) 14:00',
-      source: 'みなと生活',
+      caption: 'At the kitchen counter',
+      stamp: 'Wed 9/16, 2:00 PM',
+      source: 'Harbor Living',
       image: '/template-assets/matcha-product-3.png',
-      alt: '木の作業台にならべられた保存食材',
+      alt: 'Pantry staples arranged on a wooden counter',
     },
   },
   local: {
-    updated: '9/17(木) 5:48更新',
+    updated: 'Updated Thu 9/17, 5:48 AM',
     headlines: [
       {
-        title: '潮見区で給水管の切替工事 22日未明',
+        title: 'Water main switchover in the Harbor District early on the 22nd',
         comments: 31,
         flag: {label: 'NEW', tone: 'new'},
       },
-      {title: '北町の踏切を立体交差化 説明会は28日', comments: 58},
-      {title: '市民ホールの改修 来年3月まで休館', comments: 44},
-      {title: '海岸清掃の参加者を募集 定員300人', comments: 12},
-      {title: '区役所の窓口 土曜開庁を月2回に', comments: 67},
-      {title: '古紙回収の日程 10月から第2・第4火曜へ', comments: 23},
-      {title: '公園の遊具を入れ替え 5カ所で順次', comments: 19},
-      {title: '防災無線の試験放送 19日正午', comments: 26},
+      {title: 'Northline crossing to be raised; public meeting on the 28th', comments: 58},
+      {title: 'Civic Hall closes for renovation through March', comments: 44},
+      {title: 'Beach cleanup seeks 300 volunteers', comments: 12},
+      {title: 'City office windows to open two Saturdays a month', comments: 67},
+      {title: 'Paper recycling moves to the 2nd and 4th Tuesday in October', comments: 23},
+      {title: 'Playground equipment replaced at five parks', comments: 19},
+      {title: 'Emergency siren test at noon on the 19th', comments: 26},
     ],
     focal: {
-      caption: '区役所前の歩道',
-      stamp: '9/16(水) 13:15',
-      source: '潮見タイムズ',
+      caption: 'The sidewalk outside the city offices',
+      stamp: 'Wed 9/16, 1:15 PM',
+      source: 'Harborview Times',
       image: '/template-assets/building.png',
-      alt: '外壁に設備がならぶ集合住宅',
+      alt: 'Apartment block with exterior air handling units',
     },
   },
 };
 
-/** The 特集 module: one focal image, then text links. */
+/** The Features module: one focal image, then text links. */
 const FEATURE_LEAD = {
-  title: 'パン屋で終わる散歩道、六つ',
-  body: '坂と水路をたどって、最後に焼きたてに行きあたる道を選びました。いずれも駅から歩いて始められます。',
-  meta: '週末 · 読了8分',
+  title: 'Six walks that end at a bakery',
+  body: 'Six routes that follow the hills and the canal and finish at something still warm. Every one of them starts within walking distance of a station.',
+  meta: 'Weekend · 8 min read',
   image: '/template-assets/light-lifestyle-horizontal-1.png',
-  alt: '街角のパン屋の前で休む自転車',
+  alt: 'Cyclist resting outside a corner bakery',
 };
 
 const FEATURE_LINKS: readonly {title: string; meta: string}[] = [
-  {title: '新しい冷房規則は借主に何をもたらすか', meta: '解説 · 読了5分'},
-  {title: '2平方メートルのために設計された台所', meta: '住まい · 読了6分'},
-  {title: '列車を動かしつづける夜勤の現場', meta: '写真 · 読了12分'},
-  {title: '値段の話をやめた商店街はどうなったか', meta: '経済 · 読了9分'},
-  {title: '古い高架下をどう使うか、五つの答え', meta: '都市 · 読了7分'},
+  {
+    title: 'What the new cooling rules mean for renters',
+    meta: 'Explainer · 5 min read',
+  },
+  {title: 'A kitchen designed for 22 square feet', meta: 'Home · 6 min read'},
+  {
+    title: 'The night shift that keeps the trains moving',
+    meta: 'Photos · 12 min read',
+  },
+  {
+    title: 'What happened to the market row that stopped discounting',
+    meta: 'Business · 9 min read',
+  },
+  {
+    title: 'Five answers to what an old viaduct is for',
+    meta: 'Cities · 7 min read',
+  },
 ];
 
-/** 地域のお知らせ: a two-column run of pure text links, no imagery at all. */
+/** City Notices: a two-column run of pure text links, no imagery at all. */
 const LOCAL_NOTICES: readonly string[] = [
-  '粗大ごみの申込みが電話からWEBに',
-  '住民票のコンビニ交付 手数料を改定',
-  '区民プールの改修工事は10月20日から',
-  '巡回図書館の停車地を2カ所追加',
-  '保育所の入所申請 受付は11月4日まで',
-  '検診バスの日程を区の広報に掲載',
-  '駐輪場の定期利用 抽選結果は25日',
-  '街路樹の剪定 12月まで順次実施',
+  'Bulky trash pickup moves from phone to online',
+  'New fee for records printed at convenience stores',
+  'City pool renovation starts October 20',
+  'Bookmobile adds two more stops',
+  'Preschool applications accepted through November 4',
+  'Screening van schedule posted in the city bulletin',
+  'Bike parking permit lottery results on the 25th',
+  'Street tree pruning runs through December',
 ];
 
-/** みんなの質問: community threads, carrying an answer count instead of a date. */
+/** Answers: community threads, carrying an answer count instead of a date. */
 const QA_THREADS: readonly {title: string; answers: number; isOpen: boolean}[] =
   [
     {
-      title: '深夜バスの定期券は増発分にも使えますか',
+      title: 'Do bus passes work on the new late-night trips?',
       answers: 14,
       isOpen: true,
     },
     {
-      title: '空き家助成、名義が親のままでも申請できる？',
+      title: 'Can I apply for the home grant if the deed is in my parent’s name?',
       answers: 9,
       isOpen: true,
     },
     {
-      title: '高架橋の補修後、騒音は本当に減りましたか',
+      title: 'Is the viaduct really quieter since the repair?',
       answers: 23,
       isOpen: false,
     },
-    {title: '区民プール休館中に使える近隣の施設は', answers: 6, isOpen: true},
     {
-      title: '宅配の時間帯指定、実際どのくらい当たる？',
+      title: 'Which nearby pools are open while the city pool is closed?',
+      answers: 6,
+      isOpen: true,
+    },
+    {
+      title: 'How often do delivery windows actually hold?',
       answers: 41,
       isOpen: false,
     },
     {
-      title: '粗大ごみのWEB申込み、受付番号はどこに届く',
+      title: 'Where does the confirmation number for online pickup go?',
       answers: 3,
       isOpen: true,
     },
   ];
 
-/** 話題のキーワード: ranked search terms — the densest module on the page. */
+/** Trending Searches: ranked search terms — the densest module on the page. */
 const TRENDING_KEYWORDS: readonly string[] = [
-  '深夜バス 88系統',
-  '空き家改修 助成',
-  '秋季代表 23人',
-  '大雨 時間帯',
-  '海水冷却 実証',
-  '高架橋 補修完了',
-  '野菜 価格',
-  '宅配 的中率',
-  '市民マラソン 抽選',
-  '給水管 切替',
-  '最低賃金 小売',
-  '港湾スト 合意',
+  'late-night bus 88',
+  'empty-home grant',
+  'fall squad 23',
+  'rain timing',
+  'seawater cooling',
+  'viaduct reopening',
+  'grocery prices',
+  'delivery accuracy',
+  'marathon lottery',
+  'water main switchover',
+  'retail wage floor',
+  'port strike deal',
 ];
 
-/** 今週のイベント: three dated local listings, sized for the directory rail. */
+/** This Week’s Events: three dated local listings, sized for the rail. */
 const EVENTS: readonly {date: string; title: string; place: string}[] = [
-  {date: '9/19(土)', title: '潮見港あさ市', place: '第3埠頭'},
-  {date: '9/20(日)', title: '北町たそがれ演奏会', place: '市民ホール前'},
-  {date: '9/23(水)', title: '古本と珈琲の日', place: '高架下商店街'},
+  {date: 'Sat 9/19', title: 'Harbor Morning Market', place: 'Pier 3'},
+  {date: 'Sun 9/20', title: 'Northline Twilight Concert', place: 'Civic Hall lawn'},
+  {date: 'Wed 9/23', title: 'Used Books & Coffee Day', place: 'Viaduct Market Row'},
 ];
 
 /** The sign-in module's three shortcuts. */
 const SIGNIN_SHORTCUTS: readonly ShortcutTile[] = [
-  {label: 'メール', icon: EnvelopeIcon},
-  {label: '毎日のくじ', icon: GiftIcon},
-  {label: '残高を確認', icon: CreditCardIcon},
+  {label: 'Mail', icon: EnvelopeIcon},
+  {label: 'Daily draw', icon: GiftIcon},
+  {label: 'Check balance', icon: CreditCardIcon},
 ];
 
 interface DayForecast {
   /**
    * The day this column is for.
    *
-   * Bare 今日/明日 rather than 今日の天気: the module header already says both
-   * the date and the ward, so repeating 天気 in each column head spends the
-   * comparison's narrowest measure restating what the frame states once.
+   * Bare "Today"/"Tomorrow" rather than "Today's weather": the module header
+   * already says both the date and the district, so repeating "weather" in each
+   * column head spends the comparison's narrowest measure restating what the
+   * frame states once.
    */
   label: string;
   icon: IconType;
@@ -618,19 +635,19 @@ interface DayForecast {
 
 const FORECAST: readonly DayForecast[] = [
   {
-    label: '今日',
+    label: 'Today',
     icon: CloudIcon,
-    summary: 'くもり 一時雨',
-    high: '24℃',
-    low: '19℃',
+    summary: 'Cloudy, showers',
+    high: '75°F',
+    low: '66°F',
     rain: '60%',
   },
   {
-    label: '明日',
+    label: 'Tomorrow',
     icon: SunIcon,
-    summary: 'くもり のち晴れ',
-    high: '23℃',
-    low: '19℃',
+    summary: 'Cloudy, then sun',
+    high: '73°F',
+    low: '66°F',
     rain: '50%',
   },
 ];
@@ -643,12 +660,17 @@ interface MarketRow {
 }
 
 const MARKETS: readonly MarketRow[] = [
-  {name: '潮見総合225', value: '38,942.16', change: '+0.84%', isUp: true},
-  {name: '広域500', value: '2,714.08', change: '+0.31%', isUp: true},
-  {name: 'テック100', value: '17,308.55', change: '−0.62%', isUp: false},
-  {name: 'みなとREIT', value: '1,986.20', change: '+0.11%', isUp: true},
-  {name: '金 現物', value: '2,388.40', change: '−0.25%', isUp: false},
-  {name: '原油', value: '79.18', change: '+1.42%', isUp: true},
+  {
+    name: 'Harborview Composite',
+    value: '38,942.16',
+    change: '+0.84%',
+    isUp: true,
+  },
+  {name: 'Broad 500', value: '2,714.08', change: '+0.31%', isUp: true},
+  {name: 'Tech 100', value: '17,308.55', change: '−0.62%', isUp: false},
+  {name: 'Harborview REIT', value: '1,986.20', change: '+0.11%', isUp: true},
+  {name: 'Gold, spot', value: '$2,388.40', change: '−0.25%', isUp: false},
+  {name: 'Crude oil', value: '$79.18', change: '+1.42%', isUp: true},
 ];
 
 interface RankEntry {
@@ -657,58 +679,58 @@ interface RankEntry {
 }
 
 const RANKING_TABS: readonly {id: string; label: string}[] = [
-  {id: 'read', label: '読まれた'},
-  {id: 'shared', label: '共有'},
-  {id: 'discussed', label: 'コメント'},
+  {id: 'read', label: 'Read'},
+  {id: 'shared', label: 'Shared'},
+  {id: 'discussed', label: 'Discussed'},
 ];
 
 const RANKINGS: Record<string, readonly RankEntry[]> = {
   read: [
-    {title: '深夜バス増発、対象は六路線', metric: '8.4万'},
-    {title: '野菜はなぜ3カ月下がったのか', metric: '6.1万'},
-    {title: '空き家助成、対象と時期の全容', metric: '5.5万'},
-    {title: '代表23人、驚きの2人はだれか', metric: '4.8万'},
-    {title: '大雨の時間帯、1時間ごとに', metric: '3.9万'},
-    {title: '9週間早まった補修の裏側', metric: '3.1万'},
+    {title: 'Late-night service returns to six routes', metric: '84K'},
+    {title: 'Why grocery prices fell three months running', metric: '61K'},
+    {title: 'The empty-home grant: who qualifies, and when', metric: '55K'},
+    {title: 'The squad list, and the two surprise calls', metric: '48K'},
+    {title: 'Rain timing, hour by hour', metric: '39K'},
+    {title: 'The repair that beat its own schedule', metric: '31K'},
   ],
   shared: [
-    {title: '2平方メートルの台所', metric: '1.2万'},
-    {title: '年間1900個を直した修理喫茶', metric: '9800'},
-    {title: 'パン屋で終わる散歩道、六つ', metric: '8100'},
-    {title: '列車を動かしつづける夜勤', metric: '7600'},
-    {title: '児童書の延滞料を廃止', metric: '6200'},
-    {title: '時間指定をやめた美術館', metric: '4900'},
+    {title: 'A kitchen designed for 22 square feet', metric: '12K'},
+    {title: 'The repair café that fixed 1,900 kettles', metric: '9,800'},
+    {title: 'Six walks that end at a bakery', metric: '8,100'},
+    {title: 'The night shift that keeps the trains moving', metric: '7,600'},
+    {title: 'Library drops fines on children’s books', metric: '6,200'},
+    {title: 'The museum after timed entry ended', metric: '4,900'},
   ],
   discussed: [
-    {title: '来季から26チーム制を承認', metric: '613'},
-    {title: '小売の最低賃金4.1%上げ', metric: '341'},
-    {title: '金利据え置き、見通しは下方修正', metric: '302'},
-    {title: 'マラソン抽選の倍率を読む', metric: '271'},
-    {title: '7年間の更新提供という約束', metric: '258'},
-    {title: '野菜価格と供給回復のいま', metric: '214'},
+    {title: 'League approves a 26-team format', metric: '613'},
+    {title: 'Retail wage floor rises 4.1%', metric: '341'},
+    {title: 'Central bank holds, trims its forecast', metric: '302'},
+    {title: 'Marathon lottery odds, explained', metric: '271'},
+    {title: 'Seven years of security updates, promised', metric: '258'},
+    {title: 'Grocery prices and the supply recovery', metric: '214'},
   ],
 };
 
 /** The rail's single focal image — a house promotion, not a third-party ad. */
 const RAIL_FEATURE = {
-  title: '潮見の宿 秋の連泊プラン',
-  body: '海沿いの14軒を、連泊の料金と送迎の有無でくらべられるようにしました。',
-  cta: 'プランを見る',
+  title: 'Harborview inns: fall multi-night rates',
+  body: 'Fourteen places along the water, compared on multi-night rates and whether they run a shuttle.',
+  cta: 'See the rates',
   image: '/template-assets/light-home-square-1.png',
-  alt: '海に面した宿の客室からの眺め',
+  alt: 'View of the water from an inn’s guest room',
 };
 
 const FOOTER_LINKS: readonly string[] = [
-  '会社情報',
-  '広告掲載',
-  '掲載社一覧',
-  '編集方針',
-  '訂正とお詫び',
-  'アクセシビリティ',
-  'プライバシー',
-  '利用規約',
-  'ヘルプ',
-  'お問い合わせ',
+  'About',
+  'Advertise',
+  'Publishers',
+  'Editorial standards',
+  'Corrections',
+  'Accessibility',
+  'Privacy',
+  'Terms',
+  'Help',
+  'Contact',
 ];
 
 // =============================================================================
@@ -779,14 +801,14 @@ function Module({
  * headline's own line instead of breaking it, which a block-level stack would.
  *
  * The count reaches assistive technology as one phrase from `VisuallyHidden`,
- * with the glyph and the figure hidden, so the row's name ends
- * "…コメント312件" rather than a bare "312" whose unit only the icon carried.
- * The words cannot ride on the icon: a `@heroicons` component ships its own
- * `aria-hidden` on the `<svg>`, which outranks the `role="img"` and label
- * `Icon` derives from `label`, so that label never reaches the tree.
+ * with the glyph and the figure hidden, so the row's name ends "…312 comments"
+ * rather than a bare "312" whose unit only the icon carried. The words cannot
+ * ride on the icon: a `@heroicons` component ships its own `aria-hidden` on the
+ * `<svg>`, which outranks the `role="img"` and label `Icon` derives from
+ * `label`, so that label never reaches the tree.
  */
 function CommentCount({count}: {count: number}) {
-  const label = `コメント${count}件`;
+  const label = `${count} comments`;
 
   return (
     <Center isInline>
@@ -885,7 +907,7 @@ function ArticleBullet() {
  * it implies the metadata is part of what you are clicking. Here the row itself
  * stays inert, so the plate is never composed in for a headline row and the
  * anchor's underline carries the affordance; the one run that keeps the plate
- * is マーケット, whose rows are three separate figures rather than a sentence.
+ * is Markets, whose rows are three separate figures rather than a sentence.
  */
 function RowFillAnchor({
   children,
@@ -918,21 +940,22 @@ function RowFillAnchor({
 // sentence on hover, and no plate behind any of it — and it holds wherever a
 // headline appears. Five runs qualify:
 //
-// - **主要/国内/… (`NewsModule`)** — the news feed, and the page's lede. It
+// - **Top/Nation/… (`NewsModule`)** — the news feed, and the page's lede. It
 //   takes the same row at the same body size as the rest: what marks it as the
 //   lede is its place at the top of the main column, not larger type.
-// - **特集・コラム (`FeatureModule`)** — the editorial run under the module's
-//   lead piece. Its section-and-reading-time metadata rides in the row's
-//   `ArticleMeta` island, exactly as the news row's flag and comment count do.
-// - **地域のお知らせ (`NoticeModule`)**, both columns — municipal notices. No
-//   desk and no byline, but a ward notice is still a sentence you click to go
+// - **Features & Columns (`FeatureModule`)** — the editorial run under the
+//   module's lead piece. Its section-and-reading-time metadata rides in the
+//   row's `ArticleMeta` island, exactly as the news row's flag and comment
+//   count do.
+// - **City Notices (`NoticeModule`)**, both columns — municipal notices. No
+//   desk and no byline, but a city notice is still a sentence you click to go
 //   and read, which is what the row is for; the rows differ from the news feed
 //   only in carrying no metadata.
-// - **みんなの質問 (`QuestionModule`)** — reader threads. A question is a
-//   sentence you open, and its 受付中 flag and answer count are the same kind
-//   of marks as a news row's flag and comment count, so they ride in the same
-//   island inside the same anchor.
-// - **アクセスランキング (`RankingModule`)** — articles, ranked. The ordinal is
+// - **Answers (`QuestionModule`)** — reader threads. A question is a sentence
+//   you open, and its "Open" flag and answer count are the same kind of marks
+//   as a news row's flag and comment count, so they ride in the same island
+//   inside the same anchor.
+// - **Most Popular (`RankingModule`)** — articles, ranked. The ordinal is
 //   information, so the row keeps the `<ol>`'s decimal marker in place of the
 //   bullet (`marker="ordinal"`); everything else about it is the standard row,
 //   with the page-view figure moved off the row's far end and into the island
@@ -940,28 +963,28 @@ function RowFillAnchor({
 //
 // The rest of the page's link runs are not headline rows, and keep their own:
 //
-// - **今週のイベント (`EventModule`)** — dated listings, and the closest call
-//   here. What a reader wants from the row is *when*, so the date leads a line
-//   of its own and the three rows align on it; folding it in beside the title
-//   the way an article row folds in a flag would cost that alignment and, in a
-//   188px rail, wrap it under the title anyway. The rows carry no plate and no
-//   row interaction to begin with — the title is a plain link, so hovering it
-//   underlines the title and nothing else, which is the same affordance the
-//   article rows carry.
+// - **This Week’s Events (`EventModule`)** — dated listings, and the closest
+//   call here. What a reader wants from the row is *when*, so the date leads a
+//   line of its own and the three rows align on it; folding it in beside the
+//   title the way an article row folds in a flag would cost that alignment and,
+//   in a 188px rail, wrap it under the title anyway. The rows carry no plate
+//   and no row interaction to begin with — the title is a plain link, so
+//   hovering it underlines the title and nothing else, which is the same
+//   affordance the article rows carry.
 //
-// - **サービス一覧 (`ServiceDirectory`)** — navigation, not reading. Each row
-//   is a service's name beside its icon, so the destination is the row and the
+// - **Services (`ServiceDirectory`)** — navigation, not reading. Each row is a
+//   service's name beside its icon, so the destination is the row and the
 //   affordance is the icon-and-label pair, not an underlined sentence.
-// - **マーケット (`MarketModule`)** — a quote readout: a direction arrow, an
+// - **Markets (`MarketModule`)** — a quote readout: a direction arrow, an
 //   instrument, a level, a change. Three separate cells, no sentence, so the
 //   row keeps Astryx's interactive `ListItem` — with a row this heterogeneous
 //   the hover plate is what says the *row* is one target, where on a headline
 //   row the underline says it better and a plate says it wrongly.
-// - **話題のキーワード (`KeywordModule`)** — search terms. Each is a query, not
-//   a piece of writing, and the rank number is what separates them, so they
+// - **Trending Searches (`KeywordModule`)** — search terms. Each is a query,
+//   not a piece of writing, and the rank number is what separates them, so they
 //   wrap rather than list.
 // - The masthead's promo links, the footer's link run, the rail promo
-//   (`RailFeature`), 質問してみる and each module's もっと見る / 一覧 links —
+//   (`RailFeature`), "Ask a question" and each module's "More" / "All" links —
 //   single navigation links, not rows.
 // =============================================================================
 
@@ -1156,7 +1179,7 @@ function UtilityBar() {
   return (
     <HStack gap={2} align="center" justify="between" wrap="wrap">
       <Link href="#" size="xsm" color="secondary" maxLines={1}>
-        駅の待合室に本棚が増えている理由
+        Why station waiting rooms are filling up with bookshelves
       </Link>
       <HStack gap={1.5} align="stretch">
         {UTILITY_LINKS.map((link, index) => (
@@ -1181,8 +1204,8 @@ function Masthead({isNarrow}: {isNarrow: boolean}) {
    *
    * `alt=""` is deliberate and is the accessible treatment the pair needs: the
    * mark and the `<h1>` beside it say the same thing, so naming the image would
-   * put "アストリクス" into the tree twice and make a reader hear the site's
-   * name, then hear it again. Decorated out, the heading is the one name — and
+   * put "Astryx" into the tree twice and make a reader hear the site's name,
+   * then hear it again. Decorated out, the heading is the one name — and
    * because it is an `<h1>`, the name is still the first thing a reader reaches.
    *
    * `align="center"` is what aligns the pair, at every width: the mark is a
@@ -1214,7 +1237,7 @@ function Masthead({isNarrow}: {isNarrow: boolean}) {
         style={{width: LOGO_BOX, height: LOGO_BOX}}
       />
       <Heading level={1} type="wordmark" color="accent" maxLines={1}>
-        アストリクス
+        Astryx
       </Heading>
     </HStack>
   );
@@ -1254,7 +1277,7 @@ function Masthead({isNarrow}: {isNarrow: boolean}) {
     <Card variant="muted" padding={2}>
       <VStack gap={1.5}>
         {isNarrow ? (
-          <ScrollableArea axis="inline" label="検索の種類">
+          <ScrollableArea axis="inline" label="Search categories">
             {scopeRun}
           </ScrollableArea>
         ) : (
@@ -1263,9 +1286,9 @@ function Masthead({isNarrow}: {isNarrow: boolean}) {
         <HStack gap={1} align="center">
           <StackItem size="fill">
             <TextInput
-              label="キーワードで検索"
+              label="Search Astryx"
               isLabelHidden
-              placeholder="キーワードを入力"
+              placeholder="Enter a search term"
               value={query}
               onChange={setQuery}
               hasClear
@@ -1273,7 +1296,7 @@ function Masthead({isNarrow}: {isNarrow: boolean}) {
             />
           </StackItem>
           <Button
-            label="検索"
+            label="Search"
             variant="primary"
             icon={<Icon icon={MagnifyingGlassIcon} size="sm" />}
           />
@@ -1295,17 +1318,17 @@ function Masthead({isNarrow}: {isNarrow: boolean}) {
   const accountActions = (
     <HStack gap={0.5} align="center">
       <IconButton
-        label="メール 未読3件"
+        label="Mail, 3 unread"
         icon={<Icon icon={EnvelopeIcon} size="md" />}
         variant="ghost"
       />
       <IconButton
-        label="お知らせ 未読5件"
+        label="Notifications, 5 unread"
         icon={<Icon icon={BellIcon} size="md" />}
         variant="ghost"
       />
       <IconButton
-        label="メニューとアカウント"
+        label="Menu and account"
         icon={<Icon icon={Bars3Icon} size="md" />}
         variant="ghost"
       />
@@ -1351,7 +1374,7 @@ function ServiceDirectory({layout}: {layout: 'rail' | 'band'}) {
     return (
       <Card variant="muted" padding={2}>
         <VStack gap={1.5}>
-          <Heading level={3}>サービス一覧</Heading>
+          <Heading level={3}>Services</Heading>
           <Divider isFullBleed />
           <Grid columns={{minWidth: 148}} gap={1.5}>
             {SERVICE_DIRECTORY.map(service => (
@@ -1365,7 +1388,7 @@ function ServiceDirectory({layout}: {layout: 'rail' | 'band'}) {
 
   return (
     <Card variant="muted" padding={2}>
-      <VStack gap={1.5} as="nav" aria-label="サービス一覧">
+      <VStack gap={1.5} as="nav" aria-label="Services">
         {SERVICE_DIRECTORY.map(service => (
           <ServiceRow key={service.label} service={service} />
         ))}
@@ -1409,10 +1432,10 @@ function NewsModule({
       </ArticleList>
       <HStack gap={4} align="center">
         <Link href="#" size="sm">
-          もっと見る
+          More
         </Link>
         <Link href="#" size="sm">
-          ニュース一覧
+          All news
         </Link>
       </HStack>
     </VStack>
@@ -1438,7 +1461,7 @@ function NewsModule({
           value={topic}
           onChange={onTopicChange}
           size="sm"
-          aria-label="ニュースの分野"
+          aria-label="News sections"
           hasDivider
           isFullBleed
           overflow="scroll">
@@ -1465,10 +1488,10 @@ function NewsModule({
   );
 }
 
-/** 特集: the one module that leads with a picture, then falls back to links. */
+/** Features: the one module that leads with a picture, then falls to links. */
 function FeatureModule() {
   return (
-    <Module title="特集・コラム" moreLabel="特集一覧">
+    <Module title="Features & Columns" moreLabel="All features">
       <VStack gap={2}>
         <HStack gap={2} align="start">
           <VStack gap={1} width={136}>
@@ -1512,15 +1535,15 @@ function FeatureModule() {
 }
 
 /**
- * 地域のお知らせ: pure text, two columns, no imagery and no metadata.
+ * City Notices: pure text, two columns, no imagery and no metadata.
  *
- * A ward notice has no desk and no byline, but it is still a sentence a reader
+ * A city notice has no desk and no byline, but it is still a sentence a reader
  * clicks to go and read it, so the rows are the page's article rows — the bare
  * case of them, with nothing trailing the headline.
  */
 function NoticeModule() {
   return (
-    <Module title="地域のお知らせ" moreLabel="潮見区の一覧">
+    <Module title="City Notices" moreLabel="All notices">
       {/* Two lists rather than one two-column list: a `<ul>` cannot flow its
           own rows into columns without a multi-column ancestor, which would
           also break the rows' anchors across column boundaries. */}
@@ -1541,18 +1564,18 @@ function NoticeModule() {
 }
 
 /**
- * みんなの質問: community threads.
+ * Answers: community threads.
  *
  * A question is a sentence a reader opens, so the rows are the page's article
  * rows. The answer count replaces the comment count as the module's one figure,
- * and the 受付中 flag is the only other mark on the row — a question with no
- * answer yet is the one a reader can act on, so it is worth a flag where "asked
- * three days ago" is not. Both ride in the row's `ArticleMeta` island, the way
- * a news row carries its flag and count.
+ * and the "Open" flag is the only other mark on the row — a question still
+ * taking answers is the one a reader can act on, so it is worth a flag where
+ * "asked three days ago" is not. Both ride in the row's `ArticleMeta` island,
+ * the way a news row carries its flag and count.
  */
 function QuestionModule() {
   return (
-    <Module title="みんなの質問" moreLabel="質問一覧">
+    <Module title="Answers" moreLabel="All questions">
       <VStack gap={1.5}>
         <ArticleList>
           {QA_THREADS.map(thread => (
@@ -1561,9 +1584,9 @@ function QuestionModule() {
               title={thread.title}
               meta={
                 <ArticleMeta>
-                  {thread.isOpen && <Badge variant="info" label="受付中" />}
+                  {thread.isOpen && <Badge variant="info" label="Open" />}
                   <Text size="xsm" color="secondary" hasTabularNumbers>
-                    回答{thread.answers}
+                    {thread.answers} answers
                   </Text>
                 </ArticleMeta>
               }
@@ -1572,10 +1595,10 @@ function QuestionModule() {
         </ArticleList>
         <HStack gap={4} align="center">
           <Link href="#" size="sm">
-            質問してみる
+            Ask a question
           </Link>
           <Link href="#" size="sm">
-            回答を待っている質問
+            Questions awaiting answers
           </Link>
         </HStack>
       </VStack>
@@ -1584,7 +1607,7 @@ function QuestionModule() {
 }
 
 /**
- * 話題のキーワード: ranked search terms, wrapped rather than listed.
+ * Trending Searches: ranked search terms, wrapped rather than listed.
  *
  * Twelve entries in three lines is the highest link density on the page, and it
  * only works because the rank number does the separating — wrapping a run of
@@ -1593,7 +1616,7 @@ function QuestionModule() {
  */
 function KeywordModule() {
   return (
-    <Module title="話題のキーワード" moreLabel="検索ランキング">
+    <Module title="Trending Searches" moreLabel="Search rankings">
       <VStack gap={1.5}>
         <HStack gap={3} align="center" wrap="wrap">
           {TRENDING_KEYWORDS.map((keyword, index) => (
@@ -1607,14 +1630,16 @@ function KeywordModule() {
             </HStack>
           ))}
         </HStack>
-        <Text type="supporting">9/17(木) 6:30時点の検索数にもとづきます</Text>
+        <Text type="supporting">
+          Based on searches as of Thu 9/17, 6:30 AM
+        </Text>
       </VStack>
     </Module>
   );
 }
 
 /**
- * 今週のイベント: three dated listings, narrow enough for the directory rail.
+ * This Week’s Events: three dated listings, narrow enough for the rail.
  *
  * Its whole job is to give the directory column something below it, because a
  * 188px rail runs out of links at about half the height of the news well. Dates
@@ -1626,7 +1651,7 @@ function EventModule() {
       <VStack gap={0}>
         <HStack gap={2} align="center" justify="between" padding={2}>
           <Heading level={3} maxLines={1}>
-            今週のイベント
+            This Week’s Events
           </Heading>
         </HStack>
         <Divider isFullBleed />
@@ -1643,7 +1668,7 @@ function EventModule() {
             </VStack>
           ))}
           <Link href="#" size="sm">
-            イベント一覧
+            All events
           </Link>
         </VStack>
       </VStack>
@@ -1689,14 +1714,14 @@ function RailFeature() {
 function SignInModule() {
   return (
     <Module
-      title="ログイン"
+      title="Sign in"
       headerEnd={
         <HStack gap={1.5} align="center">
           <Link href="#" size="sm">
-            ［新規登録］
+            [Sign up]
           </Link>
           <Link href="#" size="xsm" color="secondary">
-            登録情報
+            Account info
           </Link>
         </HStack>
       }>
@@ -1784,7 +1809,7 @@ const FORECAST_BANDS: readonly ForecastBand[] = [
     id: 'rain',
     render: day => (
       <Text type="supporting" hasTabularNumbers>
-        降水 {day.rain}
+        Rain {day.rain}
       </Text>
     ),
   },
@@ -1798,33 +1823,33 @@ const FORECAST_BANDS: readonly ForecastBand[] = [
 function WeatherModule() {
   return (
     <Module
-      title="2026年9月17日(木)"
+      title="Thursday, Sep 17"
       headerEnd={
         <Link href="#" size="sm">
-          潮見区 ▾
+          Harbor District ▾
         </Link>
       }>
       <VStack gap={2}>
         {/*
           Two fixed columns, filled band by band rather than column by column.
 
-          The module is a comparison — the reason to look at it is 今日 against
-          明日 — and a comparison only works if the two readings can be scanned
-          across. Emitting a column at a time makes each column its own stack,
-          so the bands only line up while both days happen to render to the same
-          heights: a summary that wraps, a 気温 that loses a digit or an icon
-          that changes metric all shear the other column's rows out of line.
-          Emitting a band at a time puts both days' icons in one grid row, both
-          temperatures in the next, and so on, so the rows are aligned by the
-          grid itself and stay aligned whatever the fixtures say.
+          The module is a comparison — the reason to look at it is today against
+          tomorrow — and a comparison only works if the two readings can be
+          scanned across. Emitting a column at a time makes each column its own
+          stack, so the bands only line up while both days happen to render to
+          the same heights: a summary that wraps, a temperature that loses a
+          digit or an icon that changes metric all shear the other column's rows
+          out of line. Emitting a band at a time puts both days' icons in one
+          grid row, both temperatures in the next, and so on, so the rows are
+          aligned by the grid itself and stay aligned whatever the fixtures say.
 
           `columns={2}` rather than the responsive `{minWidth, max: 2}` this
           module used before: row-major filling is only correct at exactly two
-          tracks. Were the grid to collapse to one, the flow would read
-          今日, 明日, then both icons, then both temperatures — the bands
+          tracks. Were the grid to collapse to one, the flow would read Today,
+          Tomorrow, then both icons, then both temperatures — the bands
           interleaved instead of stacked. Two columns stay legible all the way
           down to the 390px rail (each track still clears 150px, and the widest
-          cell in the module is a four-character summary), so there is no width
+          cell in the module is a short summary line), so there is no width
           in this template's range where collapsing would be the better trade;
           pinning the count is what makes the row-major fill safe.
 
@@ -1846,11 +1871,11 @@ function WeatherModule() {
         <Divider isFullBleed />
         <HStack gap={1.5} align="center" justify="between" wrap="wrap">
           <HStack gap={1.5} align="center">
-            <Text size="sm">熱中症指数</Text>
-            <Badge variant="warning" label="注意" />
+            <Text size="sm">Heat index</Text>
+            <Badge variant="warning" label="Caution" />
           </HStack>
           <Link href="#" size="sm">
-            雨雲レーダー
+            Rain radar
           </Link>
         </HStack>
       </VStack>
@@ -1861,7 +1886,7 @@ function WeatherModule() {
 /** Index levels and their day change, as a ruled two-column run. */
 function MarketModule() {
   return (
-    <Module title="マーケット" moreLabel="ファイナンス">
+    <Module title="Markets" moreLabel="Finance">
       <VStack gap={1.5}>
         <List density="compact" hasDividers>
           {MARKETS.map(row => (
@@ -1873,7 +1898,7 @@ function MarketModule() {
                   icon={row.isUp ? ArrowTrendingUpIcon : ArrowTrendingDownIcon}
                   size="xsm"
                   color={row.isUp ? 'success' : 'error'}
-                  label={row.isUp ? '上昇' : '下落'}
+                  label={row.isUp ? 'Up' : 'Down'}
                 />
               }
               label={
@@ -1896,7 +1921,7 @@ function MarketModule() {
             />
           ))}
         </List>
-        <Text type="supporting">6:30現在 · 20分遅れの値です</Text>
+        <Text type="supporting">As of 6:30 AM · quotes delayed 20 minutes</Text>
       </VStack>
     </Module>
   );
@@ -1918,17 +1943,17 @@ function RankingModule({
       <VStack gap={0}>
         <HStack gap={2} align="center" justify="between" padding={2}>
           <Heading level={2} maxLines={1}>
-            アクセスランキング
+            Most Popular
           </Heading>
           <Link href="#" size="sm">
-            一覧
+            All
           </Link>
         </HStack>
         <TabList
           value={board}
           onChange={onBoardChange}
           size="sm"
-          aria-label="ランキングの種類"
+          aria-label="Ranking type"
           hasDivider
           isFullBleed>
           {RANKING_TABS.map(tab => (
@@ -1957,7 +1982,7 @@ function RankingModule({
               />
             ))}
           </ArticleList>
-          <Text type="supporting">直近24時間の集計です</Text>
+          <Text type="supporting">Totals for the past 24 hours</Text>
         </VStack>
       </VStack>
     </Card>
@@ -1999,12 +2024,12 @@ function PortalFooter() {
       </HStack>
       <HStack gap={2} align="center" justify="between" wrap="wrap">
         <Text type="supporting">
-          © 2026 アストリクス · 記事は128の提携社から配信されています
+          © 2026 Astryx · Stories from 128 partner publishers
         </Text>
         <HStack gap={1} align="center">
           <Icon icon={DevicePhoneMobileIcon} size="xsm" color="secondary" />
           <Link href="#" size="xsm" color="secondary">
-            地域: 潮見区
+            Location: Harbor District
           </Link>
         </HStack>
       </HStack>
@@ -2074,12 +2099,12 @@ export default function InformationMaximalistPage() {
         <LayoutHeader
           padding={2}
           paddingBlockEnd={0}
-          label="アストリクス ヘッダー">
+          label="Astryx header">
           <Masthead isNarrow={isNarrow} />
         </LayoutHeader>
       }
       content={
-        <LayoutContent padding={2} label="アストリクス ホーム">
+        <LayoutContent padding={2} label="Astryx home">
           {columns === 3 ? (
             <HStack gap={2} align="start">
               <VStack gap={2} width={DIRECTORY_WIDTH}>
@@ -2111,7 +2136,7 @@ export default function InformationMaximalistPage() {
         </LayoutContent>
       }
       footer={
-        <LayoutFooter padding={2} hasDivider label="アストリクス フッター">
+        <LayoutFooter padding={2} hasDivider label="Astryx footer">
           <PortalFooter />
         </LayoutFooter>
       }

@@ -15,7 +15,7 @@
  * component theming targets, so it restyles any Astryx composition, and the
  * page template this package also ships happens to be one such composition.
  *
- * The model is the East Asian web portal: a bounded, centred sheet of ruled
+ * The model is the high-density news portal: a bounded, centred sheet of ruled
  * modules, read at arm's length on a desktop monitor, where the unit of design
  * is the text link rather than the card. Six rules define it:
  *
@@ -64,17 +64,19 @@ import {informationMaximalistIconRegistry} from './icons';
  * token alone: a theme that ships a font stack has to make something actually
  * wear it.
  *
- * `-apple-system`/`BlinkMacSystemFont` first for the platform UI face, then
- * explicit Japanese faces before the generic fallback. CJK is named
- * deliberately: a Latin-only stack ending in `sans-serif` lets the browser pick
- * any installed CJK font per glyph, which on a dense page shows up as mixed
- * stroke weights inside a single headline. No webfont is loaded, so consumers
- * inherit no network dependency — a theme that shows this much text cannot
- * afford a flash of unstyled content on first paint.
+ * The stack is the platform UI face and nothing else: `-apple-system` and
+ * `BlinkMacSystemFont` for Apple, `Segoe UI` for Windows, `Roboto` for Android
+ * and most Linux desktops, then `Helvetica Neue`/`Arial` for anything older,
+ * ending in generic `sans-serif`. It names no script-specific family and makes
+ * no assumption about the writing system of the text poured into it — the
+ * system face is the one font already tuned for small UI sizes on the reader's
+ * own platform, which is what this type scale needs at 14px. No webfont is
+ * loaded, so consumers inherit no network dependency — a theme that shows this
+ * much text cannot afford a flash of unstyled content on first paint.
  */
 const FONT_FAMILY = '-apple-system';
 const FONT_FALLBACKS =
-  'BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif';
+  'BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
 /**
  * The Astryx brand blue, and the whole system's accent.
@@ -218,8 +220,8 @@ export const informationMaximalistTheme = defineTheme({
    *
    * Line heights come out of the same expansion at 1.38–1.43 for the text
    * sizes, which is the band this kind of page wants: tight enough to stack
-   * rows, loose enough that CJK glyphs — which fill their em box far more than
-   * Latin ones — do not touch across lines.
+   * rows, loose enough that two-line headlines set at 14px keep an obvious gap
+   * between the descenders of one line and the caps of the next.
    */
   typography: {
     scale: {base: 14, ratio: 1.08},
@@ -294,8 +296,8 @@ export const informationMaximalistTheme = defineTheme({
     // at 1.54, so a 13px metadata row ends up *taller* than the 14px headline
     // above it. These pin every step a reader meets to 1.36–1.43, which keeps
     // the stack of rows even and still clears the descender-to-ascender gap
-    // that CJK glyphs need — they fill their em box, so the usual Latin
-    // allowance of 1.2 closes up entirely.
+    // that a wrapped headline needs — a bare 1.2 closes that gap up entirely
+    // at these sizes.
     '--text-body-leading': '1.4286', // 20px on 14
     '--text-label-leading': '1.4286', // 20px on 14
     '--text-code-leading': '1.4286', // 20px on 14
@@ -666,9 +668,9 @@ export const informationMaximalistTheme = defineTheme({
       },
     },
     heading: {
-      // No negative tracking: it is a Latin-display trick, and on CJK text —
-      // where every glyph already fills its em box — it closes the gaps
-      // between characters that keep a 16px header legible.
+      // No negative tracking: it is a display-size trick, and these headings
+      // are not display sizes. At 16–18px, pulling the letters together only
+      // closes the gaps that keep a module header legible.
       base: {letterSpacing: '0'},
 
       // A custom visual role on Heading's `type` axis, so a masthead wordmark
