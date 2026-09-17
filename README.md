@@ -98,9 +98,13 @@ Eight rules, all encoded through public theme APIs — no page-specific CSS:
 5. **A bounded sheet** — the `layout` target gets `max-width: 1000px` and `margin-inline: auto`, so
    the page reads as a centred document rather than stretching to any monitor. Pale blue-gray
    utility surfaces sit against it.
-6. **Blue for links, red for alarms** — the accent is spent on links alone, and exactly one other
-   hue is defined: a red on `--color-text-red` / `--color-error` for the values a reader scans
-   _for_, plus an amber `--color-warning` flag with dark text on it. Rationed, so it still registers.
+6. **Blue for links, red for alarms** — the accent is `#225BFF`, the fill of the official Astryx
+   brand mark, set as the theme's `color.accent` and pinned on `--color-accent` so every
+   accent-derived state follows it: link text, interactive icons, the active tab and its indicator,
+   focus rings, the search button's fill. It is spent on those alone — neutral text, hairlines and
+   surfaces stay as they are — and exactly one other hue is defined: a red on `--color-text-red` /
+   `--color-error` for the values a reader scans _for_, plus an amber `--color-warning` flag with
+   dark text on it. Rationed, so it still registers.
 7. **Utilitarian tabs** — plain text on the module's own surface, divided by hairlines and closed by
    one rule underneath: no trough, no pills, no filled tab. Nine sections fit in 28px of height, and
    the row says where you are three ways over — weight, colour and a 2px indicator.
@@ -152,11 +156,14 @@ modules: a service directory rail, headlines under section tabs, and a rail of s
 index quotes and access rankings. It is built from bulleted text links carrying comment counts and
 status flags rather than from cards, with imagery rationed to one focal image per module.
 
-Every list of published articles — the news feed and the 特集・コラム run — is the same `ArticleRow`:
-a flush bullet in the body ink, the headline at the page's 14px body size, and its metadata inside
-one row-wide anchor, so any point in the row is a hit and the hover underline marks the headline
-alone. The page's other runs are deliberately not article lists and keep their own rows; the
-template's `Article rows` section lists which are which, and why.
+Every row whose content is a piece of writing you open and read is the same `ArticleRow`: a flush
+bullet in the body ink, the headline at the page's 14px body size, and its metadata inside one
+row-wide anchor, so any point in the row is a hit, nothing is tinted behind it, and the hover
+underline marks the headline alone. Five runs take it — the news feed, 特集・コラム, both columns of
+地域のお知らせ, みんなの質問 and アクセスランキング, which swaps the bullet for the `<ol>`'s ordinal.
+The page's other runs are deliberately not headline rows and keep their own: the service directory,
+the market quotes, the keyword cloud and the dated event listings. The template's `Article rows`
+section lists which are which, and why.
 
 Three surface widths change the arrangement: below 960px the directory folds into a band across the
 top, below 880px the rail drops under the news well, and below 720px the masthead splits into rows,
@@ -289,6 +296,12 @@ template wants, because an `<img>` cannot inherit `currentColor` the way that in
 the file carries the brand blue itself. It renders before the Japanese wordmark with `alt=""` — the
 `<h1>` beside it already carries the site's name, so naming the image too would announce that name
 twice.
+
+The wordmark next to it is set to match the mark rather than to look like a heading: the theme
+defines a `wordmark` role on Heading's `type` axis whose line box collapses onto a 20px glyph box,
+published as a `--text-wordmark-size` theme-local property that the template also reads for the
+`<img>`, so mark and wordmark cannot drift. The `<h1>` keeps its level — `type` decides only how it
+is set — and takes its ink from `color="accent"`, which is the same brand blue the file is drawn in.
 
 ## License
 

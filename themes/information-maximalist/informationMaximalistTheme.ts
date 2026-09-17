@@ -32,9 +32,11 @@
  * 4. **Two surfaces, one hue.** White for content, a pale blue-grey for utility
  *    chrome — navigation rails, search wells, module headers. The tint is what
  *    tells a reader which parts of the page are furniture.
- * 5. **Blue is the link colour, red is the alarm.** The accent is saturated,
- *    accessible and load-bearing: on a page that is mostly text links it is the
- *    primary wayfinding device, so it is not spent on decoration. Exactly one
+ * 5. **Blue is the link colour, red is the alarm.** The accent is the Astryx
+ *    brand blue, and it is load-bearing: on a page that is mostly text links it
+ *    is the primary wayfinding device, so it is not spent on decoration. Every
+ *    accent-derived state — links, interactive icons, the tab row and its
+ *    indicator, buttons, focus rings — comes off that one colour. Exactly one
  *    other hue is allowed — a red for the values a reader is scanning *for* —
  *    and it stays rare enough to keep meaning something.
  * 6. **Density follows the viewport.** Encoded as `adaptations` rather than
@@ -75,14 +77,23 @@ const FONT_FALLBACKS =
   'BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif';
 
 /**
- * A saturated portal blue. It has to survive three jobs at once: a 13px text
- * link, a filled submit button, and a 2px tab underline. A desaturated accent
- * holds up at the last two and goes muddy at the first, so this one is picked
- * for the text case and checked against white — 6.1:1, comfortably past AA for
- * body text — with the button relying on white-on-accent instead. The dark
- * seed is lifted rather than inverted so it clears the near-black background.
+ * The Astryx brand blue, and the whole system's accent.
+ *
+ * `#225BFF` is the fill of the official Astryx brand mark, so this is the one
+ * colour in the theme that is given rather than chosen: the mark and the
+ * interface it sits in should not be two different blues. It has to survive
+ * three jobs at once — a 13px text link, a filled submit button and a 2px tab
+ * underline — and it does: 5.2:1 on the white content surface and the same
+ * 5.2:1 white-on-accent inside a button, both past AA for body text. That is a
+ * step down from the 6.5:1 the previous, darker accent resolved to, which is
+ * the cost of using the brand's own blue instead of one picked for contrast
+ * alone; it is spent on the text case, and the chrome tint below is lifted to
+ * pay for the one place where it did not leave enough room.
+ *
+ * The dark seed is a tint of the same hue (H≈225) rather than an inversion, so
+ * the two schemes read as one brand: 9.4:1 on the near-black body.
  */
-const ACCENT: [light: string, dark: string] = ['#1046BE', '#8CB8F2'];
+const ACCENT: [light: string, dark: string] = ['#225BFF', '#9CB5FF'];
 
 /**
  * Hairline separators, seeded blue rather than neutral grey. On a page whose
@@ -105,7 +116,16 @@ const HAIRLINE_STRONG: [light: string, dark: string] = ['#8795AE', '#48525F'];
  */
 const SURFACE_BODY: [light: string, dark: string] = ['#FFFFFF', '#0E1116'];
 const SURFACE_CARD: [light: string, dark: string] = ['#FFFFFF', '#151A21'];
-const SURFACE_MUTED: [light: string, dark: string] = ['#E8ECF7', '#1A202A'];
+/**
+ * The light tint is set by a contrast floor, not by taste. Chrome is where this
+ * theme puts accent-coloured text on something other than white — the tab row's
+ * unselected tabs, the links in the search well — and the brand blue is lighter
+ * than the accent it replaced, so the old `#E8ECF7` left that text at 4.43:1,
+ * a hair under AA. Lifting the tint two steps takes it to 4.56:1 and costs the
+ * tint almost nothing: it still reads as furniture against white (1.15:1, was
+ * 1.18:1), which is the only job it has.
+ */
+const SURFACE_MUTED: [light: string, dark: string] = ['#ECEFF9', '#1A202A'];
 
 /**
  * The status reds and the flag amber.
@@ -125,6 +145,52 @@ const FLAG_AMBER_TEXT: [light: string, dark: string] = ['#3D2B00', '#2B1E00'];
 
 /** The 1px rule, named once so the component overrides below read as a set. */
 const RULE = 'var(--border-width) solid var(--color-border)';
+
+/**
+ * The masthead lockup's metric: the size of a wordmark set beside a brand mark.
+ *
+ * A wordmark next to a logo is not a heading that happens to be large — it is
+ * one object with the mark, so its type size and its line box are the mark's
+ * box. 20px is the size at which this theme's masthead mark reads at a glance
+ * without out-measuring the 18px section headings under it.
+ *
+ * Published as a theme-local custom property, not just written into the
+ * override below, because the composition has to size the mark to match and
+ * the two must not drift: the template reads this same variable for its
+ * `<img>` (with a literal fallback, so it still lays out under a theme that has
+ * no wordmark opinion). It is a fixed pixel value rather than a scale step
+ * because it answers to the mark's artboard, not to the type ramp — the ramp
+ * moves with the viewport, and a lockup that comes apart at 390px is not a
+ * lockup.
+ */
+const WORDMARK_SIZE = '20px';
+
+/**
+ * The `wordmark` role on Heading's `type` axis, as a value rather than a
+ * literal in one place.
+ *
+ * It has to be a value because it is written three times: once at the theme
+ * root, and once inside each adaptation rule that moves the type scale. An
+ * adaptation re-emits the whole typography block it affects — including
+ * `[data-level="1"]`, at the same specificity as `[data-type="wordmark"]` and
+ * after it in source order — so a role that is only declared at the root is
+ * silently outranked at exactly the widths the adaptation covers, and a
+ * wordmark would go back to being a heading. Restating the role inside those
+ * rules puts it after the level again.
+ *
+ * `line-height: 1` is the point of the role: it collapses the line box onto the
+ * 20px glyph box, so the wordmark's box is the brand mark's box and the two
+ * centre on one another with no leading to account for. The ink is deliberately
+ * *not* set here — a wordmark is not always the accent, and Heading already has
+ * a semantic prop for that, so the composition passes `color="accent"` and this
+ * role stays about metrics.
+ */
+const WORDMARK_HEADING = {
+  'type:wordmark': {
+    fontSize: `var(--text-wordmark-size, ${WORDMARK_SIZE})`,
+    lineHeight: '1',
+  },
+};
 
 /**
  * How far a focus ring reaches outside the element it marks.
@@ -249,6 +315,24 @@ export const informationMaximalistTheme = defineTheme({
     '--size-element-sm': '24px', // 28
     '--size-element-md': '28px', // 32
     '--size-element-lg': '32px', // 36
+
+    // --- Colour: the accent *is* the brand blue -----------------------------
+    // `color.accent` above seeds the palette — the accent's hover and pressed
+    // tints, `--color-on-accent`, the neutrals' hue — from #225BFF, and that
+    // seeding is what keeps every accent-derived state in the brand's hue. But
+    // the seed is a seed: Astryx reads the accent itself off tone 40 of the
+    // ramp it generates, which is a darker blue than the mark. Pinning the base
+    // token to the brand hex is what makes the colour on the page the brand's
+    // own, and it reaches everything: `--color-text-accent`,
+    // `--color-icon-accent` and `--color-accent-muted` are generated as
+    // `var(--color-accent)` references, and `--focus-outline-color` defaults to
+    // one too, so links, interactive icons, the tab row, the selected
+    // indicator, buttons and focus rings all resolve to #225BFF from this one
+    // line. `--color-on-accent` is the exception — it is baked from the seed
+    // because it is a contrast computation CSS cannot express — which is
+    // exactly why the seed above and this pin are the same colour rather than
+    // this being a pin on its own.
+    '--color-accent': ACCENT,
 
     // --- Structure: hairlines --------------------------------------------
     '--color-border': HAIRLINE,
@@ -586,6 +670,15 @@ export const informationMaximalistTheme = defineTheme({
       // where every glyph already fills its em box — it closes the gaps
       // between characters that keep a 16px header legible.
       base: {letterSpacing: '0'},
+
+      // A custom visual role on Heading's `type` axis, so a masthead wordmark
+      // is a named thing a composition asks for — `<Heading level={1}
+      // type="wordmark">` — instead of a heading with its metrics overridden at
+      // the call site. `level` still decides the element, so the page keeps its
+      // one `<h1>`; `type` decides only how it is set. The augmentation at the
+      // bottom of this file is what makes the name type-check, and the metrics
+      // themselves are on `WORDMARK_HEADING`, which the adaptations restate.
+      ...WORDMARK_HEADING,
     },
 
     // Badges and tokens are labels, not buttons: squared off, tight, and
@@ -606,6 +699,15 @@ export const informationMaximalistTheme = defineTheme({
         fontSize: 'var(--font-size-xs)',
       },
     },
+  },
+
+  /**
+   * Theme-local custom properties: values this theme owns and a composition
+   * may read, as opposed to the Astryx tokens above, which every theme
+   * defines. One entry — the wordmark metric documented on `WORDMARK_SIZE`.
+   */
+  localTokens: {
+    '--text-wordmark-size': WORDMARK_SIZE,
   },
 
   icons: informationMaximalistIconRegistry,
@@ -629,6 +731,9 @@ export const informationMaximalistTheme = defineTheme({
         when: {width: {below: 'md'}},
         value: {
           typography: {scale: {base: 14, ratio: 1.16}},
+          // Restated because this rule re-emits the heading levels; see
+          // `WORDMARK_HEADING`.
+          components: {heading: WORDMARK_HEADING},
           tokens: {
             '--spacing-5': '20px',
             '--spacing-6': '24px',
@@ -655,8 +760,29 @@ export const informationMaximalistTheme = defineTheme({
         when: {width: {from: '2xl'}},
         value: {
           typography: {scale: {base: 15, ratio: 1.09}},
+          // As above: the wordmark's box answers to the brand mark, so it does
+          // not move with the scale this rule widens.
+          components: {heading: WORDMARK_HEADING},
         },
       },
     ],
   },
 });
+
+/**
+ * The type side of the `wordmark` heading role above.
+ *
+ * Heading's `type` is an open axis: the union comes from `HeadingTypeMap`, which
+ * core declares as the augmentation point, and the component reflects the value
+ * to the DOM so theme CSS can style it. A custom role is therefore a promise
+ * made in two places — the override above styles it, this widens the prop that
+ * asks for it — and it is declared here, in the file that owns the override, so
+ * neither half can be shipped without the other. `astryx theme build` emits the
+ * same augmentation into its generated `.variants.d.ts`; that file is a build
+ * artifact, so the source of truth is here.
+ */
+declare module '@astryxdesign/core/Heading' {
+  interface HeadingTypeMap {
+    wordmark: true;
+  }
+}

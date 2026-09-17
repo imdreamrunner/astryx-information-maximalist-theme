@@ -845,71 +845,27 @@ function HeadlineMeta({headline}: {headline: Headline}) {
 }
 
 /**
- * One bulleted row inside a `List`.
+ * The article row's bullet.
  *
- * The bullet is composed instead of using `List`'s own `listStyle="disc"`
- * marker. That marker is a fixed 6px dot centred in a 16px box, and neither the
- * dot nor the box is reachable from a theme target — so on a page this dense it
- * is both too heavy and held 13px off the headline, with the row itself inset
- * again on top of that. A typographic bullet set in the row's own type size is
- * smaller, sits on the column edge the rest of the page aligns to, and comes in
- * at a 2px gap. The `<li>` and its `<ul>` are untouched, so the list is still a
- * list; the bullet is `aria-hidden`, so the row's accessible name is still just
- * its headline, exactly as it was with the native marker.
+ * Composed instead of using `List`'s own `listStyle="disc"` marker. That marker
+ * is a fixed 6px dot centred in a 16px box, and neither the dot nor the box is
+ * reachable from a theme target — so on a page this dense it is both too heavy
+ * and held 13px off the headline, with the row itself inset again on top of
+ * that. A typographic bullet set in the row's type size is smaller, sits on the
+ * column edge the rest of the page aligns to, and comes in at a 2px gap. The
+ * `<li>` and its `<ul>` are untouched, so the list is still a list; the bullet
+ * is `aria-hidden`, so the row's accessible name is still just its headline,
+ * exactly as it was with the native marker.
  *
- * `align="start"` rather than `center`: the bullet marks the first line of the
- * row, so on a headline that wraps it has to stay on that line instead of
- * drifting to the middle of the block.
+ * `primary` rather than `accent` because an article row is not link text end to
+ * end — it carries a flag, a desk, a count — and a blue dot in front of that
+ * mix reads as a fourth coloured element rather than as the list's marker.
  */
-function BulletRow({
-  size,
-  tone = 'accent',
-  hasFillingContent = false,
-  children,
-}: {
-  /**
-   * The type size of the row, so the bullet shares its line box.
-   *
-   * The two the page uses: `sm` for its link rows, `base` for its article rows.
-   */
-  size: 'sm' | 'base';
-  /**
-   * Ink for the bullet itself.
-   *
-   * `accent` matches the run of links it marks, so a module of short link rows
-   * reads as one object. `primary` is for the article rows, where the row is
-   * not link text end to end — it carries a flag, a desk or a comment count
-   * too — and a blue dot in front of that mix reads as a fourth coloured
-   * element rather than as the list's own marker.
-   *
-   * @default 'accent'
-   */
-  tone?: 'accent' | 'primary';
-  /**
-   * Whether the content already claims the rest of the row for itself.
-   *
-   * The row's content normally rides in a filling `StackItem` of its own, which
-   * is all a run of short link rows needs. A news row instead wants its anchor
-   * to *be* that filling item, so the hit target reaches the row's far edge
-   * rather than stopping at the end of the headline; setting this hands the
-   * filling slot to the child, which then carries `size="fill"` itself.
-   *
-   * @default false
-   */
-  hasFillingContent?: boolean;
-  children: ReactNode;
-}) {
+function ArticleBullet() {
   return (
-    <HStack gap={0.5} align="start">
-      <Text size={size} color={tone} aria-hidden>
-        •
-      </Text>
-      {hasFillingContent ? (
-        children
-      ) : (
-        <StackItem size="fill">{children}</StackItem>
-      )}
-    </HStack>
+    <Text size="base" color="primary" aria-hidden>
+      •
+    </Text>
   );
 }
 
@@ -927,9 +883,9 @@ function BulletRow({
  * plate behind the whole row, and an article row is a headline plus whatever
  * trails it — a flag, a count, a section and a reading time — so tinting all of
  * it implies the metadata is part of what you are clicking. Here the row itself
- * stays inert, so the plate is never composed in for article rows and every
- * other list in the page keeps its own hover unchanged, while the anchor's
- * underline carries the affordance.
+ * stays inert, so the plate is never composed in for a headline row and the
+ * anchor's underline carries the affordance; the one run that keeps the plate
+ * is マーケット, whose rows are three separate figures rather than a sentence.
  */
 function RowFillAnchor({
   children,
@@ -953,12 +909,14 @@ function RowFillAnchor({
 // =============================================================================
 // Article rows
 //
-// Which lists on this page are article lists.
+// Which of this page's link runs are article lists, and which are not.
 //
-// An *article list* is a run of pieces published by an editorial desk: each row
-// names one article a reader can open and read. Those runs all take the row
-// below, so the page has one article row rather than four near-identical ones.
-// There are two of them:
+// A *headline row* is a row whose whole content is a piece of writing you open
+// and read: a sentence, and at most some marks about it. Every one of them on
+// this page takes the row below, so a reader learns the interaction once —
+// bullet, body-size sentence, one row-wide anchor, an underline under the
+// sentence on hover, and no plate behind any of it — and it holds wherever a
+// headline appears. Five runs qualify:
 //
 // - **主要/国内/… (`NewsModule`)** — the news feed, and the page's lede. It
 //   takes the same row at the same body size as the rest: what marks it as the
@@ -966,44 +924,60 @@ function RowFillAnchor({
 // - **特集・コラム (`FeatureModule`)** — the editorial run under the module's
 //   lead piece. Its section-and-reading-time metadata rides in the row's
 //   `ArticleMeta` island, exactly as the news row's flag and comment count do.
+// - **地域のお知らせ (`NoticeModule`)**, both columns — municipal notices. No
+//   desk and no byline, but a ward notice is still a sentence you click to go
+//   and read, which is what the row is for; the rows differ from the news feed
+//   only in carrying no metadata.
+// - **みんなの質問 (`QuestionModule`)** — reader threads. A question is a
+//   sentence you open, and its 受付中 flag and answer count are the same kind
+//   of marks as a news row's flag and comment count, so they ride in the same
+//   island inside the same anchor.
+// - **アクセスランキング (`RankingModule`)** — articles, ranked. The ordinal is
+//   information, so the row keeps the `<ol>`'s decimal marker in place of the
+//   bullet (`marker="ordinal"`); everything else about it is the standard row,
+//   with the page-view figure moved off the row's far end and into the island
+//   so the anchor is unbroken.
 //
-// Everything else that looks like a list here is deliberately *not* one, and
-// keeps its own row:
+// The rest of the page's link runs are not headline rows, and keep their own:
 //
-// - **サービス一覧 (`ServiceDirectory`)** — a navigation directory of services,
-//   not of articles. Icon-led, and the whole row is the destination's name.
-// - **地域のお知らせ (`NoticeModule`)** — municipal notices. Administrative
-//   copy from the ward, with no desk, no byline and no reading time.
-// - **みんなの質問 (`QuestionModule`)** — reader threads. Its figure is an
-//   answer count and its flag is 受付中: a state to act on, not a publication.
-// - **話題のキーワード (`KeywordModule`)** — search terms. Each is a query, and
-//   the rank number is what separates them, so they wrap rather than list.
-// - **今週のイベント (`EventModule`)** — dated listings with a venue. What a
-//   reader wants from a row is the date, which leads it.
-// - **マーケット (`MarketModule`)** — instrument rows carrying a level and a
-//   change; ruled, and numeric end to end.
-// - **アクセスランキング (`RankingModule`)** — articles, but ranked: the
-//   ordinal is the point, so the row takes a decimal marker instead of a bullet
-//   and a metric instead of a headline's metadata.
-// - The masthead's promo links, the footer's link run and each module's
-//   もっと見る / 一覧 links — single navigation links, not rows.
+// - **今週のイベント (`EventModule`)** — dated listings, and the closest call
+//   here. What a reader wants from the row is *when*, so the date leads a line
+//   of its own and the three rows align on it; folding it in beside the title
+//   the way an article row folds in a flag would cost that alignment and, in a
+//   188px rail, wrap it under the title anyway. The rows carry no plate and no
+//   row interaction to begin with — the title is a plain link, so hovering it
+//   underlines the title and nothing else, which is the same affordance the
+//   article rows carry.
+//
+// - **サービス一覧 (`ServiceDirectory`)** — navigation, not reading. Each row
+//   is a service's name beside its icon, so the destination is the row and the
+//   affordance is the icon-and-label pair, not an underlined sentence.
+// - **マーケット (`MarketModule`)** — a quote readout: a direction arrow, an
+//   instrument, a level, a change. Three separate cells, no sentence, so the
+//   row keeps Astryx's interactive `ListItem` — with a row this heterogeneous
+//   the hover plate is what says the *row* is one target, where on a headline
+//   row the underline says it better and a plate says it wrongly.
+// - **話題のキーワード (`KeywordModule`)** — search terms. Each is a query, not
+//   a piece of writing, and the rank number is what separates them, so they
+//   wrap rather than list.
+// - The masthead's promo links, the footer's link run, the rail promo
+//   (`RailFeature`), 質問してみる and each module's もっと見る / 一覧 links —
+//   single navigation links, not rows.
 // =============================================================================
 
 /**
- * One article row — the page's single pattern for a published article.
+ * One article row — the page's single pattern for a headline you can open.
  *
  * Five decisions make up the pattern, and they are here rather than repeated at
- * each call site so that every editorial list on the page is the same object:
+ * each call site so that every headline run on the page is the same object:
  *
  * - A small bullet in the body ink, flush to the module's content edge, so a
  *   run of rows reads as one list and the bullet marks where the column starts
- *   (see {@link BulletRow}). `primary` rather than `accent` because an article
- *   row is not link text end to end — it carries metadata too — and a blue dot
- *   in front of that mix reads as a fourth coloured element rather than as the
- *   list's marker.
- * - The headline at the page's body size, 14px, in every editorial list
- *   including the news module: one article row means one article type size, so
- *   no list can be read as outranking another by its type alone.
+ *   (see {@link ArticleBullet}) — or, in a ranked list, the ordinal in its
+ *   place.
+ * - The headline at the page's body size, 14px, in every list including the
+ *   news module: one article row means one article type size, so no list can be
+ *   read as outranking another by its type alone.
  * - **One** anchor, filling the row: the headline, its metadata and the empty
  *   width past them are all inside it, so anywhere in the row is a hit
  *   (see {@link RowFillAnchor}).
@@ -1012,36 +986,53 @@ function RowFillAnchor({
  * - That underline runs under the headline and stops there, because the
  *   metadata is an atomic inline island (see {@link ArticleMeta}).
  *
- * Which of the page's lists are article lists — and, as importantly, which are
- * not — is settled in the note above.
+ * Which of the page's runs take this row — and, as importantly, which do not —
+ * is settled in the note above.
  */
 function ArticleRow({
   title,
   meta,
+  marker = 'bullet',
 }: {
   title: string;
   /** What trails the headline inside the anchor, wrapped in `ArticleMeta`. */
   meta?: ReactNode;
+  /**
+   * What marks the row.
+   *
+   * `bullet` is the row's own (see {@link ArticleBullet}). `ordinal` leaves the
+   * mark to the enclosing ranked `ArticleList`, whose decimal counter is both
+   * the marker and information the reader came for — two marks on one row would
+   * be one too many.
+   *
+   * @default 'bullet'
+   */
+  marker?: 'bullet' | 'ordinal';
 }) {
   return (
-    // No `href` on the `ListItem`, unlike the page's non-article lists: the
-    // anchor *is* the row here, so the row has no interactive state of its own.
+    // No `href` on the `ListItem`, unlike the page's quote rows: the anchor
+    // *is* the row here, so the row has no interactive state of its own and
+    // nothing paints behind it.
     <ListItem
       label={
-        // `base` and no prop to change it: the row's type size is part of the
-        // pattern, not a per-call-site choice.
-        <BulletRow size="base" tone="primary" hasFillingContent>
+        // `align="start"` rather than `center`: the bullet marks the first line
+        // of the row, so on a headline that wraps it stays on that line instead
+        // of drifting to the middle of the block.
+        <HStack gap={0.5} align="start">
+          {marker === 'bullet' && <ArticleBullet />}
           {/*
-            `display="block"` keeps the row's contents in inline flow instead of
-            a flex line: a flex container blockifies its children, which would
-            drag the metadata island back under the underline and cost it its
-            place on the headline's line.
+            `size="base"` and no prop to change it: the row's type size is part
+            of the pattern, not a per-call-site choice. `display="block"` keeps
+            the row's contents in inline flow instead of a flex line: a flex
+            container blockifies its children, which would drag the metadata
+            island back under the underline and cost it its place on the
+            headline's line.
           */}
           <Link href="#" as={RowFillAnchor} size="base" display="block">
             {title}
             {meta}
           </Link>
-        </BulletRow>
+        </HStack>
       }
     />
   );
@@ -1055,8 +1046,26 @@ function ArticleRow({
  * call sites, and so a later change to how article runs are spaced or divided
  * lands in one place instead of being applied to each of them by hand.
  */
-function ArticleList({children}: {children: ReactNode}) {
-  return <List density="compact">{children}</List>;
+function ArticleList({
+  children,
+  isRanked = false,
+}: {
+  children: ReactNode;
+  /**
+   * Whether the run is a ranking, which makes it an `<ol>` numbered from 1.
+   *
+   * The rows in it take `marker="ordinal"`, so the counter replaces the bullet
+   * rather than joining it.
+   *
+   * @default false
+   */
+  isRanked?: boolean;
+}) {
+  return (
+    <List density="compact" listStyle={isRanked ? 'decimal' : 'none'}>
+      {children}
+    </List>
+  );
 }
 
 /** A directory row: hairline-stroke glyph, then the service name as a link. */
@@ -1129,12 +1138,19 @@ function ShortcutButton({
  * under either colour scheme.
  *
  * The artboard is square and the mark bleeds to its edges, so the box is square
- * too — no distortion — and sized a little over the wordmark's cap height, the
- * usual relationship for a mark set beside a wordmark.
+ * too — no distortion — and it is the wordmark's box rather than a size of its
+ * own: `--text-wordmark-size` is the metric the theme sets the wordmark to (see
+ * its `heading` / `type:wordmark` role), so reading the same variable here is
+ * what guarantees the mark and the text are one lockup instead of two things
+ * that happen to be 20px today. The literal fallback is what the mark falls back
+ * to under a theme with no wordmark opinion, and it is also what the `width` and
+ * `height` attributes carry: those are the intrinsic box the browser reserves
+ * before any CSS lands, so they keep the masthead from reflowing on load.
  */
 const LOGO_SRC = '/astryx-logo.svg';
 const LOGO_WIDTH = 20;
 const LOGO_HEIGHT = 20;
+const LOGO_BOX = `var(--text-wordmark-size, ${LOGO_WIDTH}px)`;
 
 function UtilityBar() {
   return (
@@ -1177,11 +1193,27 @@ function Masthead({isNarrow}: {isNarrow: boolean}) {
    * per breakpoint. `width`/`height` are set on the attributes rather than left
    * to the asset's intrinsic 32px, so the row is laid out to its final measure
    * before the image lands and the mark never reflows the masthead.
+   *
+   * The two halves are also set to match rather than merely sit together.
+   * `type="wordmark"` is the theme's masthead role: it puts the text at
+   * `--text-wordmark-size` with a line box collapsed onto it, which is the same
+   * variable `LOGO_BOX` sizes the mark from — so the glyphs and the artboard are
+   * the same 20px square and stay that way if the theme moves the metric.
+   * `color="accent"` is the other half: the accent *is* the brand blue the mark
+   * is drawn in (see the theme's `--color-accent`), so asking for the accent by
+   * name is how the text matches the mark's ink without this file naming a hex
+   * — and it keeps matching under a theme that brands itself differently.
    */
   const wordmark = (
     <HStack gap={1} align="center">
-      <img src={LOGO_SRC} alt="" width={LOGO_WIDTH} height={LOGO_HEIGHT} />
-      <Heading level={1} maxLines={1}>
+      <img
+        src={LOGO_SRC}
+        alt=""
+        width={LOGO_WIDTH}
+        height={LOGO_HEIGHT}
+        style={{width: LOGO_BOX, height: LOGO_BOX}}
+      />
+      <Heading level={1} type="wordmark" color="accent" maxLines={1}>
         アストリクス
       </Heading>
     </HStack>
@@ -1479,41 +1511,30 @@ function FeatureModule() {
   );
 }
 
-/** 地域のお知らせ: pure text, two columns, no imagery and no metadata. */
+/**
+ * 地域のお知らせ: pure text, two columns, no imagery and no metadata.
+ *
+ * A ward notice has no desk and no byline, but it is still a sentence a reader
+ * clicks to go and read it, so the rows are the page's article rows — the bare
+ * case of them, with nothing trailing the headline.
+ */
 function NoticeModule() {
   return (
     <Module title="地域のお知らせ" moreLabel="潮見区の一覧">
+      {/* Two lists rather than one two-column list: a `<ul>` cannot flow its
+          own rows into columns without a multi-column ancestor, which would
+          also break the rows' anchors across column boundaries. */}
       <Grid columns={{minWidth: 232, max: 2}} gap={1.5}>
-        <List density="compact">
+        <ArticleList>
           {LOCAL_NOTICES.slice(0, 4).map(notice => (
-            <ListItem
-              key={notice}
-              href="#"
-              label={
-                <BulletRow size="sm">
-                  <Text size="sm" color="accent">
-                    {notice}
-                  </Text>
-                </BulletRow>
-              }
-            />
+            <ArticleRow key={notice} title={notice} />
           ))}
-        </List>
-        <List density="compact">
+        </ArticleList>
+        <ArticleList>
           {LOCAL_NOTICES.slice(4).map(notice => (
-            <ListItem
-              key={notice}
-              href="#"
-              label={
-                <BulletRow size="sm">
-                  <Text size="sm" color="accent">
-                    {notice}
-                  </Text>
-                </BulletRow>
-              }
-            />
+            <ArticleRow key={notice} title={notice} />
           ))}
-        </List>
+        </ArticleList>
       </Grid>
     </Module>
   );
@@ -1522,36 +1543,33 @@ function NoticeModule() {
 /**
  * みんなの質問: community threads.
  *
- * The answer count replaces the comment count as the module's one figure, and
- * the 受付中 flag is the only other mark on the row — a question with no answer
- * yet is the one a reader can act on, so it is worth a flag where "asked three
- * days ago" is not.
+ * A question is a sentence a reader opens, so the rows are the page's article
+ * rows. The answer count replaces the comment count as the module's one figure,
+ * and the 受付中 flag is the only other mark on the row — a question with no
+ * answer yet is the one a reader can act on, so it is worth a flag where "asked
+ * three days ago" is not. Both ride in the row's `ArticleMeta` island, the way
+ * a news row carries its flag and count.
  */
 function QuestionModule() {
   return (
     <Module title="みんなの質問" moreLabel="質問一覧">
       <VStack gap={1.5}>
-        <List density="compact">
+        <ArticleList>
           {QA_THREADS.map(thread => (
-            <ListItem
+            <ArticleRow
               key={thread.title}
-              href="#"
-              label={
-                <BulletRow size="sm">
-                  <HStack gap={1} align="center" wrap="wrap">
-                    <Text size="sm" color="accent">
-                      {thread.title}
-                    </Text>
-                    {thread.isOpen && <Badge variant="info" label="受付中" />}
-                    <Text size="xsm" color="secondary" hasTabularNumbers>
-                      回答{thread.answers}
-                    </Text>
-                  </HStack>
-                </BulletRow>
+              title={thread.title}
+              meta={
+                <ArticleMeta>
+                  {thread.isOpen && <Badge variant="info" label="受付中" />}
+                  <Text size="xsm" color="secondary" hasTabularNumbers>
+                    回答{thread.answers}
+                  </Text>
+                </ArticleMeta>
               }
             />
           ))}
-        </List>
+        </ArticleList>
         <HStack gap={4} align="center">
           <Link href="#" size="sm">
             質問してみる
@@ -1918,24 +1936,27 @@ function RankingModule({
           ))}
         </TabList>
         <VStack gap={1.5} padding={2}>
-          <List listStyle="decimal" density="compact" start={1}>
+          {/* Ranked articles are still articles, so the rows are the page's
+              article rows with the `<ol>`'s ordinal standing in for the bullet.
+              The page-view figure moves off the row's far end and into the
+              headline's island: at the end of the row it sat outside the
+              anchor, which left a gap in a row a reader reads as one target. */}
+          <ArticleList isRanked>
             {entries.map(entry => (
-              <ListItem
+              <ArticleRow
                 key={entry.title}
-                href="#"
-                label={
-                  <Text size="sm" color="accent" maxLines={2}>
-                    {entry.title}
-                  </Text>
-                }
-                endContent={
-                  <Text size="xsm" color="secondary" hasTabularNumbers>
-                    {entry.metric}
-                  </Text>
+                marker="ordinal"
+                title={entry.title}
+                meta={
+                  <ArticleMeta>
+                    <Text size="xsm" color="secondary" hasTabularNumbers>
+                      {entry.metric}
+                    </Text>
+                  </ArticleMeta>
                 }
               />
             ))}
-          </List>
+          </ArticleList>
           <Text type="supporting">直近24時間の集計です</Text>
         </VStack>
       </VStack>
