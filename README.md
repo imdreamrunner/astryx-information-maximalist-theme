@@ -153,10 +153,10 @@ index quotes and access rankings. It is built from bulleted text links carrying 
 status flags rather than from cards, with imagery rationed to one focal image per module.
 
 Every list of published articles — the news feed and the 特集・コラム run — is the same `ArticleRow`:
-a flush bullet in the body ink, the headline, and its metadata inside one row-wide anchor, so any
-point in the row is a hit and the hover underline marks the headline alone. The page's other runs
-are deliberately not article lists and keep their own rows; the template's `Article rows` section
-lists which are which, and why.
+a flush bullet in the body ink, the headline at the page's 14px body size, and its metadata inside
+one row-wide anchor, so any point in the row is a hit and the hover underline marks the headline
+alone. The page's other runs are deliberately not article lists and keep their own rows; the
+template's `Article rows` section lists which are which, and why.
 
 Three surface widths change the arrangement: below 960px the directory folds into a band across the
 top, below 880px the rail drops under the news well, and below 720px the masthead splits into rows,

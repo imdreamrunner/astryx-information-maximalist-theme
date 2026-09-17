@@ -867,16 +867,20 @@ function BulletRow({
   hasFillingContent = false,
   children,
 }: {
-  /** The type size of the row, so the bullet shares its line box. */
-  size: 'sm' | 'base' | 'lg';
+  /**
+   * The type size of the row, so the bullet shares its line box.
+   *
+   * The two the page uses: `sm` for its link rows, `base` for its article rows.
+   */
+  size: 'sm' | 'base';
   /**
    * Ink for the bullet itself.
    *
    * `accent` matches the run of links it marks, so a module of short link rows
-   * reads as one object. `primary` is for the news module, where the row is not
-   * link text end to end — it carries a flag and a comment count too — and a
-   * blue dot in front of that mix reads as a fourth coloured element rather
-   * than as the list's own marker.
+   * reads as one object. `primary` is for the article rows, where the row is
+   * not link text end to end — it carries a flag, a desk or a comment count
+   * too — and a blue dot in front of that mix reads as a fourth coloured
+   * element rather than as the list's own marker.
    *
    * @default 'accent'
    */
@@ -956,8 +960,9 @@ function RowFillAnchor({
 // below, so the page has one article row rather than four near-identical ones.
 // There are two of them:
 //
-// - **主要/国内/… (`NewsModule`)** — the news feed. The page's lede, so it is
-//   the one article list at `lg` rather than at body size.
+// - **主要/国内/… (`NewsModule`)** — the news feed, and the page's lede. It
+//   takes the same row at the same body size as the rest: what marks it as the
+//   lede is its place at the top of the main column, not larger type.
 // - **特集・コラム (`FeatureModule`)** — the editorial run under the module's
 //   lead piece. Its section-and-reading-time metadata rides in the row's
 //   `ArticleMeta` island, exactly as the news row's flag and comment count do.
@@ -996,8 +1001,9 @@ function RowFillAnchor({
  *   row is not link text end to end — it carries metadata too — and a blue dot
  *   in front of that mix reads as a fourth coloured element rather than as the
  *   list's marker.
- * - The headline at the row's type size, which is the body 14px everywhere
- *   except the news module (see `size`).
+ * - The headline at the page's body size, 14px, in every editorial list
+ *   including the news module: one article row means one article type size, so
+ *   no list can be read as outranking another by its type alone.
  * - **One** anchor, filling the row: the headline, its metadata and the empty
  *   width past them are all inside it, so anywhere in the row is a hit
  *   (see {@link RowFillAnchor}).
@@ -1012,37 +1018,26 @@ function RowFillAnchor({
 function ArticleRow({
   title,
   meta,
-  size = 'base',
 }: {
   title: string;
   /** What trails the headline inside the anchor, wrapped in `ArticleMeta`. */
   meta?: ReactNode;
-  /**
-   * The row's type size.
-   *
-   * `base` — the page's 14px body — is the article row's size, and every
-   * editorial list takes it. The news module is the one exception and passes
-   * `lg`: a portal's news module is its lede, and at a uniform 14px it reads as
-   * just another list; 15px is enough to make it the thing the eye lands on
-   * first without opening a gap the other modules would then have to answer.
-   *
-   * @default 'base'
-   */
-  size?: 'base' | 'lg';
 }) {
   return (
     // No `href` on the `ListItem`, unlike the page's non-article lists: the
     // anchor *is* the row here, so the row has no interactive state of its own.
     <ListItem
       label={
-        <BulletRow size={size} tone="primary" hasFillingContent>
+        // `base` and no prop to change it: the row's type size is part of the
+        // pattern, not a per-call-site choice.
+        <BulletRow size="base" tone="primary" hasFillingContent>
           {/*
             `display="block"` keeps the row's contents in inline flow instead of
             a flex line: a flex container blockifies its children, which would
             drag the metadata island back under the underline and cost it its
             place on the headline's line.
           */}
-          <Link href="#" as={RowFillAnchor} size={size} display="block">
+          <Link href="#" as={RowFillAnchor} size="base" display="block">
             {title}
             {meta}
           </Link>
@@ -1371,13 +1366,10 @@ function NewsModule({
   const headlines = (
     <VStack gap={1.5}>
       <Text type="supporting">{feed.updated}</Text>
-      {/* `size="lg"` is the one step up the scale on the whole page; see
-          `ArticleRow`'s `size` for why the lede gets it and nothing else does. */}
       <ArticleList>
         {feed.headlines.map(headline => (
           <ArticleRow
             key={headline.title}
-            size="lg"
             title={headline.title}
             meta={<HeadlineMeta headline={headline} />}
           />
