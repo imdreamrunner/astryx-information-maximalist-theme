@@ -126,6 +126,16 @@ const FLAG_AMBER_TEXT: [light: string, dark: string] = ['#3D2B00', '#2B1E00'];
 /** The 1px rule, named once so the component overrides below read as a set. */
 const RULE = 'var(--border-width) solid var(--color-border)';
 
+/**
+ * How far a focus ring reaches outside the element it marks.
+ *
+ * Read from the tokens that draw the ring rather than written as a pixel
+ * value, so a container reserving room for a ring cannot fall behind a change
+ * to the ring itself.
+ */
+const FOCUS_RING_REACH =
+  'calc(var(--focus-outline-width) + var(--focus-outline-offset))';
+
 export const informationMaximalistTheme = defineTheme({
   name: 'information-maximalist',
 
@@ -328,12 +338,19 @@ export const informationMaximalistTheme = defineTheme({
       base: {fontFamily: `${FONT_FAMILY}, ${FONT_FALLBACKS}`},
     },
 
-    // The header and footer are separated from content by a rule rather than
-    // by a shadow or a background change, which is the single most recognisable
-    // move in this system.
+    // The footer is separated from content by a rule rather than by a shadow or
+    // a background change, which is the single most recognisable move in this
+    // system.
+    //
+    // The header deliberately does not take the matching rule. Its last row is
+    // a centred run of promo links, and a hairline directly under them closes
+    // the masthead a second time — the masthead already ends where the two
+    // column grids begin, so the rule only draws a line under two links and
+    // makes them look like a section of their own. `hasDivider` on the header
+    // is left off in the template for the same reason; this target is the other
+    // half of that decision, so the two cannot drift apart.
     'layout-header': {
       base: {
-        borderBottom: RULE,
         backgroundColor: 'var(--color-background-surface)',
       },
     },
@@ -421,6 +438,12 @@ export const informationMaximalistTheme = defineTheme({
     'tab-list': {
       base: {
         borderBottom: RULE,
+        // The tab row is furniture, not content, so it takes the same pale
+        // utility surface the search well and the service rail take. It is the
+        // tint that tells a reader the row switches the module below rather
+        // than belonging to it — on white the row reads as the module's first
+        // line of content, and the rule under it as a heading underline.
+        backgroundColor: 'var(--color-background-muted)',
         // Astryx reserves a 4px gap above that rule so a hover pill never
         // touches it. This system has no pill to protect, and the gap is the
         // one thing that stops the row from reading as a ruled tab bar: the
@@ -429,6 +452,19 @@ export const informationMaximalistTheme = defineTheme({
         // that is supposed to close it. Taken back to zero so the row sits on
         // the rule, the way the header and footer sit on theirs.
         paddingBlockEnd: '0px',
+        // The tab row is the first child of a card that clips its overflow,
+        // and the row's scroller bleeds its own 3px of ring room *outside* the
+        // row — which puts that room outside the card too, so a focused tab
+        // lost its top edge, the first tab its left edge and the last tab its
+        // right edge. The row therefore reserves the ring's own reach itself,
+        // read from the same tokens that draw it so the two cannot drift
+        // apart, on the three sides that have something to clip against.
+        //
+        // Block-end is deliberately not among them: the gap above is what
+        // keeps a focus ring whole, the gap below is what would stop the row
+        // sitting on its rule.
+        paddingBlockStart: FOCUS_RING_REACH,
+        paddingInline: FOCUS_RING_REACH,
         // The reserved gap also drops the selected indicator through it, so
         // the indicator has to come back up by the same amount. `-1px` is
         // Astryx's own no-gap value: the indicator overlays the rule rather
@@ -523,9 +559,13 @@ export const informationMaximalistTheme = defineTheme({
       'density:compact': {rowGap: 'var(--spacing-1)'},
     },
     'list-item': {
-      // Markers sit in the accent so a bulleted run of links reads as one
-      // object rather than as black dots beside blue text.
-      base: {'::marker': {color: 'var(--color-text-accent)'}},
+      // Rows run flush to their module's content edge. Astryx insets every
+      // item by 8px so a hover plate clears the text; in this system the module
+      // already supplies that padding, so the inset only pushes a bulleted run
+      // off the left edge every other module aligns to — and the bullet is the
+      // one mark on the page that has to sit on that edge, because it is what
+      // tells the eye where the column starts.
+      base: {paddingInline: '0px'},
     },
 
     // Supporting text is where a dense layout puts its metadata. It keeps the

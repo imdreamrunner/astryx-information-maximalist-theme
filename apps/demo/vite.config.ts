@@ -19,14 +19,45 @@ const rawBase = process.env.DEMO_BASE || '/astryx-information-maximalist-theme';
 const base = rawBase.endsWith('/') ? rawBase : `${rawBase}/`;
 
 /**
- * The template addresses its imagery with root-absolute `/template-assets/*`
- * paths, which only resolve when the app is served from a domain root. Rather
- * than edit the template — its source is the product this repository ships, and
- * is kept byte-identical to the upstream extraction — rewrite those literals at
- * transform time to sit under the configured base.
+ * Hostnames the dev and preview servers will answer to, comma-separated.
+ *
+ * Vite rejects requests carrying a `Host` header it was not started for, which
+ * is the right default — it is what stops a page in the browser from reaching a
+ * server bound to a developer's machine. Reviewing a build from another machine
+ * (a remote workstation, a shared preview box) means naming that host, so it is
+ * read from the environment rather than written in: nothing is trusted unless
+ * whoever starts the server says so.
+ *
+ * `DEMO_ALLOWED_HOSTS=devvm1030.example.com pnpm --filter …demo run preview`
+ */
+const allowedHosts = (process.env.DEMO_ALLOWED_HOSTS ?? '')
+  .split(',')
+  .map(host => host.trim())
+  .filter(host => host.length > 0);
+
+/**
+ * Every root-absolute asset path the template addresses, without its leading
+ * slash so it can be concatenated onto the base.
+ *
+ * `template-assets/` is the imagery directory; `astryx-logo.svg` is the
+ * official Astryx brand mark in the masthead, a single file not a directory,
+ * which is why these are matched as literal prefixes rather than as one
+ * directory rule.
+ */
+const ROOT_ABSOLUTE_ASSETS: readonly string[] = [
+  'template-assets/',
+  'astryx-logo.svg',
+];
+
+/**
+ * The template addresses its assets with root-absolute paths, which only
+ * resolve when the app is served from a domain root. Rather than edit the
+ * template — its source is the product this repository ships — rewrite those
+ * literals at transform time to sit under the configured base, so the same
+ * source works at a domain root and under the Pages project path.
  *
  * This mirrors what `astryx template` does when it scaffolds the template into
- * a project, except that it points at the real images in `public/` instead of
+ * a project, except that it points at the real assets in `public/` instead of
  * inline placeholder data URIs, so the demo shows the original design.
  */
 function baseTemplateAssets(): Plugin {
@@ -38,7 +69,10 @@ function baseTemplateAssets(): Plugin {
         return null;
       }
       return {
-        code: code.replaceAll('/template-assets/', `${base}template-assets/`),
+        code: ROOT_ABSOLUTE_ASSETS.reduce(
+          (out, asset) => out.replaceAll(`/${asset}`, `${base}${asset}`),
+          code,
+        ),
         map: null,
       };
     },
@@ -68,6 +102,11 @@ export default defineConfig({
   },
   server: {
     fs: {allow: [repoRoot]},
+    // Empty by default, which leaves Vite's own host check in place.
+    allowedHosts: allowedHosts,
+  },
+  preview: {
+    allowedHosts: allowedHosts,
   },
   build: {
     outDir: 'dist',

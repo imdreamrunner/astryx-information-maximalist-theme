@@ -142,13 +142,21 @@ astryx template information-maximalist ./src/app/page.tsx
 
 Scaffolding rewrites the template's `/template-assets/*` image references to inline placeholder
 data URIs, so the scaffolded page renders with zero setup regardless of whether the consuming
-project has those asset files.
+project has those asset files. The masthead's `/astryx-logo.svg` is not among them — it is a brand
+mark, and there is no placeholder to stand in for one — so copy that one file out of the package's
+`public/` into the host's own public directory, or point the `<img>` at wherever the host keeps it.
 
 The page is a portal home in the East Asian style, and its content is original fictional Japanese
 copy throughout — a two-row masthead over a tinted search well, then three unequal columns of ruled
 modules: a service directory rail, headlines under section tabs, and a rail of sign-in, forecast,
 index quotes and access rankings. It is built from bulleted text links carrying comment counts and
 status flags rather than from cards, with imagery rationed to one focal image per module.
+
+Every list of published articles — the news feed and the 特集・コラム run — is the same `ArticleRow`:
+a flush bullet in the body ink, the headline, and its metadata inside one row-wide anchor, so any
+point in the row is a hit and the hover underline marks the headline alone. The page's other runs
+are deliberately not article lists and keep their own rows; the template's `Article rows` section
+lists which are which, and why.
 
 Three surface widths change the arrangement: below 960px the directory folds into a band across the
 top, below 880px the rail drops under the news well, and below 720px the masthead splits into rows,
@@ -176,6 +184,13 @@ themes/
 templates/
   information-maximalist.tsx                   — the page template source
   information-maximalist.template.mjs          — template metadata (name, description, category)
+
+public/astryx-logo.svg                         — the official Astryx brand mark in the masthead,
+                                                 copied byte-for-byte from facebook/astryx's
+                                                 docsite brand asset (see Source);
+                                                 published with the package, unlike the imagery it
+                                                 sits beside, because the CLI has no placeholder
+                                                 to substitute for a brand mark
 
 public/template-assets/                        — the original imagery; rendered as-is by the demo,
                                                  and not required by the CLI, which rewrites every
@@ -258,6 +273,22 @@ repository, and the copy is fiction — the portal, its services, its headlines,
 place names do not exist. The theme is original to this repository too. What remains from the
 extraction is the imagery in `public/template-assets/`, which is Astryx's own stock template asset
 set.
+
+Two things in the page are upstream's rather than this repository's, and are kept byte-identical to
+it:
+
+| File                      | From                                                                                                                                                                                                                                                |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `public/astryx-logo.svg`  | [`apps/docsite/public/brand-icon.svg`](https://github.com/facebook/astryx/blob/5a7b81959305e8f7e63238ff2f475353a7716222/apps/docsite/public/brand-icon.svg) at `5a7b819`, sha256 `54e9c7b2405ff964750159384a9c169159e3efa93c4a412dba3331f1a4c38b75` |
+| `public/template-assets/` | the stock template asset set, as above                                                                                                                                                                                                              |
+
+The mark is the current official Astryx brand mark and is not redrawn here, so the copy is
+verifiable: `sha256sum` it against the upstream path. It is the docsite's brand asset, which is the
+same artwork the docsite's `logos.tsx` inlines as `AstryxIcon`; the public file is the form this
+template wants, because an `<img>` cannot inherit `currentColor` the way that inline path does, and
+the file carries the brand blue itself. It renders before the Japanese wordmark with `alt=""` — the
+`<h1>` beside it already carries the site's name, so naming the image too would announce that name
+twice.
 
 ## License
 

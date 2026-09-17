@@ -58,6 +58,7 @@ import {AspectRatio} from '@astryxdesign/core/AspectRatio';
 import {Badge} from '@astryxdesign/core/Badge';
 import {Button} from '@astryxdesign/core/Button';
 import {Card} from '@astryxdesign/core/Card';
+import {Center} from '@astryxdesign/core/Center';
 import {Divider} from '@astryxdesign/core/Divider';
 import {Grid} from '@astryxdesign/core/Grid';
 import {Icon} from '@astryxdesign/core/Icon';
@@ -76,6 +77,7 @@ import {Tab, TabList} from '@astryxdesign/core/TabList';
 import {Heading, Text} from '@astryxdesign/core/Text';
 import {TextInput} from '@astryxdesign/core/TextInput';
 import {Token} from '@astryxdesign/core/Token';
+import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
 import type {IconType} from '@astryxdesign/core/Icon';
 import {
   ArrowTrendingDownIcon,
@@ -94,7 +96,6 @@ import {
   DevicePhoneMobileIcon,
   EnvelopeIcon,
   GiftIcon,
-  GlobeAsiaAustraliaIcon,
   HomeModernIcon,
   MagnifyingGlassIcon,
   MapIcon,
@@ -204,7 +205,7 @@ function useSurfaceWidth() {
 // =============================================================================
 // Fixtures
 //
-// みなとネット is an invented portal for the invented city of 潮見; every name,
+// アストリクス is an invented site for the invented city of 潮見; every name,
 // headline, figure, source and date below is fictional.
 // =============================================================================
 
@@ -277,7 +278,7 @@ interface Headline {
   title: string;
   /** Comment count. Rendered as an alert chip once it runs into four figures. */
   comments: number;
-  /** Optional status flag: 新着 for new, 速報 for breaking. */
+  /** Optional status flag: NEW for new, 速報 for breaking. */
   flag?: {label: string; tone: 'new' | 'breaking'};
 }
 
@@ -313,21 +314,21 @@ const NEWS_FEEDS: Record<string, NewsFeed> = {
       {
         title: '深夜バス14便を増発 通勤実態調査うけ',
         comments: 238,
-        flag: {label: '新着', tone: 'new'},
+        flag: {label: 'NEW', tone: 'new'},
       },
       {title: '野菜の値下がり3カ月連続 供給が回復', comments: 176},
       {title: '海水冷却で消費電力31%減 実証実験おわる', comments: 87},
       {
         title: '高架橋の補修が完了 予定より9週間早く',
         comments: 41,
-        flag: {label: '新着', tone: 'new'},
+        flag: {label: 'NEW', tone: 'new'},
       },
       {title: '木曜夕方から内陸で大雨のおそれ 気象台', comments: 512},
       {title: '秋季代表23人を発表 初選出は2人', comments: 1240},
       {
         title: '空き家改修の助成 申請受付をきょう開始',
         comments: 63,
-        flag: {label: '新着', tone: 'new'},
+        flag: {label: 'NEW', tone: 'new'},
       },
       {title: '宅配の時間帯的中率 公表を各社に要請', comments: 95},
     ],
@@ -345,7 +346,7 @@ const NEWS_FEEDS: Record<string, NewsFeed> = {
       {
         title: '空き家改修の助成 3000世帯を上限に受付',
         comments: 148,
-        flag: {label: '新着', tone: 'new'},
+        flag: {label: 'NEW', tone: 'new'},
       },
       {title: '学校給食の無償化 4月から2地区に拡大', comments: 96},
       {title: '深夜バス88系統が本格運行へ 9カ月の試行おわる', comments: 58},
@@ -393,7 +394,7 @@ const NEWS_FEEDS: Record<string, NewsFeed> = {
       {
         title: '食品チェーンが加盟店210店を買収 二重価格を解消',
         comments: 186,
-        flag: {label: '新着', tone: 'new'},
+        flag: {label: 'NEW', tone: 'new'},
       },
       {title: '宅配大手が黒字転換 3年ぶり', comments: 54},
       {title: '地銀が12支店を再開 2年前の閉鎖分', comments: 89},
@@ -417,7 +418,7 @@ const NEWS_FEEDS: Record<string, NewsFeed> = {
       {
         title: '海水冷却でデータホールの電力31%減 実証で',
         comments: 141,
-        flag: {label: '新着', tone: 'new'},
+        flag: {label: 'NEW', tone: 'new'},
       },
       {title: '交通アプリがオフライン時刻表に対応', comments: 71},
       {title: '公開気象データに沿岸40年分を追加', comments: 46},
@@ -465,7 +466,7 @@ const NEWS_FEEDS: Record<string, NewsFeed> = {
       {
         title: '9リットルの備蓄棚 ひとり分を無駄なく',
         comments: 64,
-        flag: {label: '新着', tone: 'new'},
+        flag: {label: 'NEW', tone: 'new'},
       },
       {title: '難しい一角は最後に植える 庭づくりの順番', comments: 36},
       {title: '1日乗車券で行ける小さな山歩き5選', comments: 74},
@@ -489,7 +490,7 @@ const NEWS_FEEDS: Record<string, NewsFeed> = {
       {
         title: '潮見区で給水管の切替工事 22日未明',
         comments: 31,
-        flag: {label: '新着', tone: 'new'},
+        flag: {label: 'NEW', tone: 'new'},
       },
       {title: '北町の踏切を立体交差化 説明会は28日', comments: 58},
       {title: '市民ホールの改修 来年3月まで休館', comments: 44},
@@ -600,6 +601,13 @@ const SIGNIN_SHORTCUTS: readonly ShortcutTile[] = [
 ];
 
 interface DayForecast {
+  /**
+   * The day this column is for.
+   *
+   * Bare 今日/明日 rather than 今日の天気: the module header already says both
+   * the date and the ward, so repeating 天気 in each column head spends the
+   * comparison's narrowest measure restating what the frame states once.
+   */
   label: string;
   icon: IconType;
   summary: string;
@@ -610,7 +618,7 @@ interface DayForecast {
 
 const FORECAST: readonly DayForecast[] = [
   {
-    label: '今日の天気',
+    label: '今日',
     icon: CloudIcon,
     summary: 'くもり 一時雨',
     high: '24℃',
@@ -618,7 +626,7 @@ const FORECAST: readonly DayForecast[] = [
     rain: '60%',
   },
   {
-    label: '明日の天気',
+    label: '明日',
     icon: SunIcon,
     summary: 'くもり のち晴れ',
     high: '23℃',
@@ -762,28 +770,298 @@ function Module({
  * click, so at that point it graduates from secondary text to a red chip. The
  * threshold is what keeps the alert colour rationed: two or three rows on the
  * whole page carry it, which is why it still reads as an alert.
+ *
+ * `Center isInline` rather than a bare `HStack`: the count sits inside the
+ * headline's anchor, and a hovered anchor paints its underline straight through
+ * any in-flow descendant. An inline-flex box is an atomic inline, which is
+ * where that underline stops — so the hover rule lands on the headline text and
+ * not on the glyph and figure trailing it. It also keeps the count on the
+ * headline's own line instead of breaking it, which a block-level stack would.
+ *
+ * The count reaches assistive technology as one phrase from `VisuallyHidden`,
+ * with the glyph and the figure hidden, so the row's name ends
+ * "…コメント312件" rather than a bare "312" whose unit only the icon carried.
+ * The words cannot ride on the icon: a `@heroicons` component ships its own
+ * `aria-hidden` on the `<svg>`, which outranks the `role="img"` and label
+ * `Icon` derives from `label`, so that label never reaches the tree.
  */
 function CommentCount({count}: {count: number}) {
   const label = `コメント${count}件`;
 
-  if (count >= 1000) {
-    return (
-      <Token size="sm" color="red" label={String(count)} aria-label={label} />
-    );
-  }
   return (
-    <HStack gap={0.5} align="center">
-      <Icon
-        icon={ChatBubbleLeftEllipsisIcon}
-        size="xsm"
-        color="secondary"
-        label={label}
-      />
-      <Text size="xsm" color="secondary" hasTabularNumbers>
-        {count}
+    <Center isInline>
+      {count >= 1000 ? (
+        <Token size="sm" color="red" label={String(count)} aria-hidden />
+      ) : (
+        <HStack gap={0.5} align="center">
+          <Icon icon={ChatBubbleLeftEllipsisIcon} size="xsm" color="secondary" />
+          <Text size="xsm" color="secondary" hasTabularNumbers aria-hidden>
+            {count}
+          </Text>
+        </HStack>
+      )}
+      <VisuallyHidden>{label}</VisuallyHidden>
+    </Center>
+  );
+}
+
+/**
+ * What trails an article's headline inside the row's anchor — a flag, a count,
+ * a byline — held in one inline-flex island.
+ *
+ * The island earns its place for two reasons. It is an atomic inline, so the
+ * anchor's hover underline ends with the headline instead of running on under
+ * marks that are not the thing being named. And it is one box, so when the row
+ * runs out of measure everything in it wraps together and keeps its own
+ * spacing, rather than a flag stranding on the line above its count.
+ *
+ * The leading gap is this box's padding rather than a space after the headline,
+ * because a space *is* headline text: it would carry the underline out past the
+ * last character.
+ */
+function ArticleMeta({children}: {children: ReactNode}) {
+  return (
+    <Center isInline paddingInlineStart={1}>
+      <HStack gap={1} align="center">
+        {children}
+      </HStack>
+    </Center>
+  );
+}
+
+/** A news row's trail: the status flag, then the comment count. */
+function HeadlineMeta({headline}: {headline: Headline}) {
+  return (
+    <ArticleMeta>
+      {headline.flag !== undefined &&
+        (headline.flag.tone === 'breaking' ? (
+          <Badge variant="error" label={headline.flag.label} />
+        ) : (
+          <Badge variant="warning" label={headline.flag.label} />
+        ))}
+      <CommentCount count={headline.comments} />
+    </ArticleMeta>
+  );
+}
+
+/**
+ * One bulleted row inside a `List`.
+ *
+ * The bullet is composed instead of using `List`'s own `listStyle="disc"`
+ * marker. That marker is a fixed 6px dot centred in a 16px box, and neither the
+ * dot nor the box is reachable from a theme target — so on a page this dense it
+ * is both too heavy and held 13px off the headline, with the row itself inset
+ * again on top of that. A typographic bullet set in the row's own type size is
+ * smaller, sits on the column edge the rest of the page aligns to, and comes in
+ * at a 2px gap. The `<li>` and its `<ul>` are untouched, so the list is still a
+ * list; the bullet is `aria-hidden`, so the row's accessible name is still just
+ * its headline, exactly as it was with the native marker.
+ *
+ * `align="start"` rather than `center`: the bullet marks the first line of the
+ * row, so on a headline that wraps it has to stay on that line instead of
+ * drifting to the middle of the block.
+ */
+function BulletRow({
+  size,
+  tone = 'accent',
+  hasFillingContent = false,
+  children,
+}: {
+  /** The type size of the row, so the bullet shares its line box. */
+  size: 'sm' | 'base' | 'lg';
+  /**
+   * Ink for the bullet itself.
+   *
+   * `accent` matches the run of links it marks, so a module of short link rows
+   * reads as one object. `primary` is for the news module, where the row is not
+   * link text end to end — it carries a flag and a comment count too — and a
+   * blue dot in front of that mix reads as a fourth coloured element rather
+   * than as the list's own marker.
+   *
+   * @default 'accent'
+   */
+  tone?: 'accent' | 'primary';
+  /**
+   * Whether the content already claims the rest of the row for itself.
+   *
+   * The row's content normally rides in a filling `StackItem` of its own, which
+   * is all a run of short link rows needs. A news row instead wants its anchor
+   * to *be* that filling item, so the hit target reaches the row's far edge
+   * rather than stopping at the end of the headline; setting this hands the
+   * filling slot to the child, which then carries `size="fill"` itself.
+   *
+   * @default false
+   */
+  hasFillingContent?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <HStack gap={0.5} align="start">
+      <Text size={size} color={tone} aria-hidden>
+        •
       </Text>
+      {hasFillingContent ? (
+        children
+      ) : (
+        <StackItem size="fill">{children}</StackItem>
+      )}
     </HStack>
   );
+}
+
+/**
+ * Renders a `Link`'s anchor as the filling item of the stack row it sits in.
+ *
+ * `Link` styles, focuses and gives link semantics to whatever element it is
+ * told to render, and `StackItem` is polymorphic, so handing one to the other
+ * produces a single real `<a>` that is also a filling flex item — one anchor
+ * spanning the row, no nesting, no second tab stop, and nothing about it styled
+ * here: it grows for the same reason every other filling row in this file does.
+ *
+ * Widening the anchor, rather than making the row interactive, is also what
+ * keeps the row's background clear. An interactive `ListItem` paints a hover
+ * plate behind the whole row, and an article row is a headline plus whatever
+ * trails it — a flag, a count, a section and a reading time — so tinting all of
+ * it implies the metadata is part of what you are clicking. Here the row itself
+ * stays inert, so the plate is never composed in for article rows and every
+ * other list in the page keeps its own hover unchanged, while the anchor's
+ * underline carries the affordance.
+ */
+function RowFillAnchor({
+  children,
+  // Astryx hands a custom link component `to` alongside `href` so that
+  // `to`-based routers need no adapter. This one renders a native anchor,
+  // where `to` is not an attribute, so it is taken off rather than stamped
+  // onto the DOM.
+  to: _to,
+  ...anchorProps
+}: {
+  children?: ReactNode;
+  to?: string;
+}) {
+  return (
+    <StackItem as="a" size="fill" {...anchorProps}>
+      {children}
+    </StackItem>
+  );
+}
+
+// =============================================================================
+// Article rows
+//
+// Which lists on this page are article lists.
+//
+// An *article list* is a run of pieces published by an editorial desk: each row
+// names one article a reader can open and read. Those runs all take the row
+// below, so the page has one article row rather than four near-identical ones.
+// There are two of them:
+//
+// - **主要/国内/… (`NewsModule`)** — the news feed. The page's lede, so it is
+//   the one article list at `lg` rather than at body size.
+// - **特集・コラム (`FeatureModule`)** — the editorial run under the module's
+//   lead piece. Its section-and-reading-time metadata rides in the row's
+//   `ArticleMeta` island, exactly as the news row's flag and comment count do.
+//
+// Everything else that looks like a list here is deliberately *not* one, and
+// keeps its own row:
+//
+// - **サービス一覧 (`ServiceDirectory`)** — a navigation directory of services,
+//   not of articles. Icon-led, and the whole row is the destination's name.
+// - **地域のお知らせ (`NoticeModule`)** — municipal notices. Administrative
+//   copy from the ward, with no desk, no byline and no reading time.
+// - **みんなの質問 (`QuestionModule`)** — reader threads. Its figure is an
+//   answer count and its flag is 受付中: a state to act on, not a publication.
+// - **話題のキーワード (`KeywordModule`)** — search terms. Each is a query, and
+//   the rank number is what separates them, so they wrap rather than list.
+// - **今週のイベント (`EventModule`)** — dated listings with a venue. What a
+//   reader wants from a row is the date, which leads it.
+// - **マーケット (`MarketModule`)** — instrument rows carrying a level and a
+//   change; ruled, and numeric end to end.
+// - **アクセスランキング (`RankingModule`)** — articles, but ranked: the
+//   ordinal is the point, so the row takes a decimal marker instead of a bullet
+//   and a metric instead of a headline's metadata.
+// - The masthead's promo links, the footer's link run and each module's
+//   もっと見る / 一覧 links — single navigation links, not rows.
+// =============================================================================
+
+/**
+ * One article row — the page's single pattern for a published article.
+ *
+ * Five decisions make up the pattern, and they are here rather than repeated at
+ * each call site so that every editorial list on the page is the same object:
+ *
+ * - A small bullet in the body ink, flush to the module's content edge, so a
+ *   run of rows reads as one list and the bullet marks where the column starts
+ *   (see {@link BulletRow}). `primary` rather than `accent` because an article
+ *   row is not link text end to end — it carries metadata too — and a blue dot
+ *   in front of that mix reads as a fourth coloured element rather than as the
+ *   list's marker.
+ * - The headline at the row's type size, which is the body 14px everywhere
+ *   except the news module (see `size`).
+ * - **One** anchor, filling the row: the headline, its metadata and the empty
+ *   width past them are all inside it, so anywhere in the row is a hit
+ *   (see {@link RowFillAnchor}).
+ * - No hover plate. The `ListItem` takes no `href`, so it has no interactive
+ *   state to paint; the affordance is the anchor's underline.
+ * - That underline runs under the headline and stops there, because the
+ *   metadata is an atomic inline island (see {@link ArticleMeta}).
+ *
+ * Which of the page's lists are article lists — and, as importantly, which are
+ * not — is settled in the note above.
+ */
+function ArticleRow({
+  title,
+  meta,
+  size = 'base',
+}: {
+  title: string;
+  /** What trails the headline inside the anchor, wrapped in `ArticleMeta`. */
+  meta?: ReactNode;
+  /**
+   * The row's type size.
+   *
+   * `base` — the page's 14px body — is the article row's size, and every
+   * editorial list takes it. The news module is the one exception and passes
+   * `lg`: a portal's news module is its lede, and at a uniform 14px it reads as
+   * just another list; 15px is enough to make it the thing the eye lands on
+   * first without opening a gap the other modules would then have to answer.
+   *
+   * @default 'base'
+   */
+  size?: 'base' | 'lg';
+}) {
+  return (
+    // No `href` on the `ListItem`, unlike the page's non-article lists: the
+    // anchor *is* the row here, so the row has no interactive state of its own.
+    <ListItem
+      label={
+        <BulletRow size={size} tone="primary" hasFillingContent>
+          {/*
+            `display="block"` keeps the row's contents in inline flow instead of
+            a flex line: a flex container blockifies its children, which would
+            drag the metadata island back under the underline and cost it its
+            place on the headline's line.
+          */}
+          <Link href="#" as={RowFillAnchor} size={size} display="block">
+            {title}
+            {meta}
+          </Link>
+        </BulletRow>
+      }
+    />
+  );
+}
+
+/**
+ * The list an article row belongs in: compact, unruled, and nothing else.
+ *
+ * Thin on purpose — it exists so that "an article list" is one name in this
+ * file rather than a `density` prop that has to be remembered at each of the
+ * call sites, and so a later change to how article runs are spaced or divided
+ * lands in one place instead of being applied to each of them by hand.
+ */
+function ArticleList({children}: {children: ReactNode}) {
+  return <List density="compact">{children}</List>;
 }
 
 /** A directory row: hairline-stroke glyph, then the service name as a link. */
@@ -799,12 +1077,31 @@ function ServiceRow({service}: {service: ShortcutTile}) {
 }
 
 /** A masthead / sign-in shortcut: glyph over label, sized for a 12px caption. */
-function ShortcutButton({shortcut}: {shortcut: ShortcutTile}) {
+function ShortcutButton({
+  shortcut,
+  canWrap = false,
+}: {
+  shortcut: ShortcutTile;
+  /**
+   * Lets the label run onto a second line instead of truncating.
+   *
+   * The masthead rows are free to be as wide as their labels, so they clamp to
+   * one line; the sign-in panel divides a fixed rail into equal thirds, and
+   * there the longest of the three labels has to be allowed to wrap — clamping
+   * it would hide half a word, and widening its column would break the equal
+   * thirds the vertical rules are drawn on.
+   */
+  canWrap?: boolean;
+}) {
   return (
     <Link href="#" size="xsm" color="secondary">
       <VStack gap={0.5} align="center">
         <Icon icon={shortcut.icon} size="lg" color="accent" />
-        <Text size="xsm" color="inherit" maxLines={1}>
+        <Text
+          size="xsm"
+          color="inherit"
+          justify="center"
+          maxLines={canWrap ? 0 : 1}>
           {shortcut.label}
         </Text>
       </VStack>
@@ -815,6 +1112,34 @@ function ShortcutButton({shortcut}: {shortcut: ShortcutTile}) {
 // =============================================================================
 // Masthead
 // =============================================================================
+
+/**
+ * The current official Astryx brand mark, ahead of the wordmark.
+ *
+ * Copied byte-for-byte from the canonical brand asset in
+ * [facebook/astryx](https://github.com/facebook/astryx) at
+ * `apps/docsite/public/brand-icon.svg`
+ * (`5a7b81959305e8f7e63238ff2f475353a7716222`,
+ * sha256 `54e9c7b2…a4c38b75`) into this package's `public/`, so the mark on the
+ * page is the upstream file rather than a redraw of it. It is published with
+ * the package (`files` includes `public`) and, like the template's imagery, is
+ * addressed root-absolute — the demo's Vite config rewrites that literal under
+ * whatever base the site is served from, which is what makes it resolve both at
+ * a domain root and under the GitHub Pages project path.
+ *
+ * The docsite's own `logos.tsx` calls itself the source of truth for the
+ * artwork, but it inlines the mark so the path can take `currentColor`. An
+ * `<img>` cannot inherit `color`, so the public file is the right form here: it
+ * carries the brand blue itself, which is also what keeps the mark on-brand
+ * under either colour scheme.
+ *
+ * The artboard is square and the mark bleeds to its edges, so the box is square
+ * too — no distortion — and sized a little over the wordmark's cap height, the
+ * usual relationship for a mark set beside a wordmark.
+ */
+const LOGO_SRC = '/astryx-logo.svg';
+const LOGO_WIDTH = 20;
+const LOGO_HEIGHT = 20;
 
 function UtilityBar() {
   return (
@@ -840,11 +1165,29 @@ function Masthead({isNarrow}: {isNarrow: boolean}) {
   const [query, setQuery] = useState('');
   const [scope, setScope] = useState(SEARCH_SCOPES[0]);
 
+  /**
+   * The mark and the wordmark, as one object.
+   *
+   * `alt=""` is deliberate and is the accessible treatment the pair needs: the
+   * mark and the `<h1>` beside it say the same thing, so naming the image would
+   * put "アストリクス" into the tree twice and make a reader hear the site's
+   * name, then hear it again. Decorated out, the heading is the one name — and
+   * because it is an `<h1>`, the name is still the first thing a reader reaches.
+   *
+   * `align="center"` is what aligns the pair, at every width: the mark is a
+   * direct flex child of the row, so it is blockified — it never sits on the
+   * heading's text baseline — and the row centres it on the heading's line box
+   * in the three-across desktop masthead and in the narrow row where the
+   * wordmark sits opposite the account buttons alike, with nothing to adjust
+   * per breakpoint. `width`/`height` are set on the attributes rather than left
+   * to the asset's intrinsic 32px, so the row is laid out to its final measure
+   * before the image lands and the mark never reflows the masthead.
+   */
   const wordmark = (
     <HStack gap={1} align="center">
-      <Icon icon={GlobeAsiaAustraliaIcon} size="lg" color="accent" />
+      <img src={LOGO_SRC} alt="" width={LOGO_WIDTH} height={LOGO_HEIGHT} />
       <Heading level={1} maxLines={1}>
-        みなとネット
+        アストリクス
       </Heading>
     </HStack>
   );
@@ -930,7 +1273,7 @@ function Masthead({isNarrow}: {isNarrow: boolean}) {
         variant="ghost"
       />
       <IconButton
-        label="お知らせ 新着5件"
+        label="お知らせ 未読5件"
         icon={<Icon icon={BellIcon} size="md" />}
         variant="ghost"
       />
@@ -1028,35 +1371,18 @@ function NewsModule({
   const headlines = (
     <VStack gap={1.5}>
       <Text type="supporting">{feed.updated}</Text>
-      <List listStyle="disc" density="compact">
+      {/* `size="lg"` is the one step up the scale on the whole page; see
+          `ArticleRow`'s `size` for why the lede gets it and nothing else does. */}
+      <ArticleList>
         {feed.headlines.map(headline => (
-          <ListItem
+          <ArticleRow
             key={headline.title}
-            href="#"
-            label={
-              <HStack gap={1} align="center" wrap="wrap">
-                {/*
-                  The one step up the scale on the whole page. A portal's news
-                  module is its lede, and at a uniform 14px it reads as just
-                  another list; 15px is enough to make it the thing the eye
-                  lands on first without opening a gap the other modules would
-                  then have to answer.
-                */}
-                <Text size="lg" color="accent">
-                  {headline.title}
-                </Text>
-                {headline.flag !== undefined &&
-                  (headline.flag.tone === 'breaking' ? (
-                    <Badge variant="error" label={headline.flag.label} />
-                  ) : (
-                    <Badge variant="warning" label={headline.flag.label} />
-                  ))}
-                <CommentCount count={headline.comments} />
-              </HStack>
-            }
+            size="lg"
+            title={headline.title}
+            meta={<HeadlineMeta headline={headline} />}
           />
         ))}
-      </List>
+      </ArticleList>
       <HStack gap={4} align="center">
         <Link href="#" size="sm">
           もっと見る
@@ -1139,22 +1465,23 @@ function FeatureModule() {
           </StackItem>
         </HStack>
         <Divider isFullBleed />
-        <List listStyle="disc" density="compact">
+        {/* Genuine editorial pieces, so the same row the news feed uses — at
+            body size, which is every article list but the lede. The section and
+            reading time ride inside the row's anchor as its metadata, the way
+            the news row carries its flag and comment count. */}
+        <ArticleList>
           {FEATURE_LINKS.map(feature => (
-            <ListItem
+            <ArticleRow
               key={feature.title}
-              href="#"
-              label={
-                <HStack gap={1.5} align="center" wrap="wrap">
-                  <Text size="sm" color="accent">
-                    {feature.title}
-                  </Text>
+              title={feature.title}
+              meta={
+                <ArticleMeta>
                   <Text type="supporting">{feature.meta}</Text>
-                </HStack>
+                </ArticleMeta>
               }
             />
           ))}
-        </List>
+        </ArticleList>
       </VStack>
     </Module>
   );
@@ -1165,28 +1492,32 @@ function NoticeModule() {
   return (
     <Module title="地域のお知らせ" moreLabel="潮見区の一覧">
       <Grid columns={{minWidth: 232, max: 2}} gap={1.5}>
-        <List listStyle="disc" density="compact">
+        <List density="compact">
           {LOCAL_NOTICES.slice(0, 4).map(notice => (
             <ListItem
               key={notice}
               href="#"
               label={
-                <Text size="sm" color="accent">
-                  {notice}
-                </Text>
+                <BulletRow size="sm">
+                  <Text size="sm" color="accent">
+                    {notice}
+                  </Text>
+                </BulletRow>
               }
             />
           ))}
         </List>
-        <List listStyle="disc" density="compact">
+        <List density="compact">
           {LOCAL_NOTICES.slice(4).map(notice => (
             <ListItem
               key={notice}
               href="#"
               label={
-                <Text size="sm" color="accent">
-                  {notice}
-                </Text>
+                <BulletRow size="sm">
+                  <Text size="sm" color="accent">
+                    {notice}
+                  </Text>
+                </BulletRow>
               }
             />
           ))}
@@ -1208,21 +1539,23 @@ function QuestionModule() {
   return (
     <Module title="みんなの質問" moreLabel="質問一覧">
       <VStack gap={1.5}>
-        <List listStyle="disc" density="compact">
+        <List density="compact">
           {QA_THREADS.map(thread => (
             <ListItem
               key={thread.title}
               href="#"
               label={
-                <HStack gap={1} align="center" wrap="wrap">
-                  <Text size="sm" color="accent">
-                    {thread.title}
-                  </Text>
-                  {thread.isOpen && <Badge variant="info" label="受付中" />}
-                  <Text size="xsm" color="secondary" hasTabularNumbers>
-                    回答{thread.answers}
-                  </Text>
-                </HStack>
+                <BulletRow size="sm">
+                  <HStack gap={1} align="center" wrap="wrap">
+                    <Text size="sm" color="accent">
+                      {thread.title}
+                    </Text>
+                    {thread.isOpen && <Badge variant="info" label="受付中" />}
+                    <Text size="xsm" color="secondary" hasTabularNumbers>
+                      回答{thread.answers}
+                    </Text>
+                  </HStack>
+                </BulletRow>
               }
             />
           ))}
@@ -1359,26 +1692,97 @@ function SignInModule() {
       }>
       <Card variant="muted" padding={2}>
         {/*
-          `align="stretch"` is load-bearing: a vertical `Divider` takes its
-          height from the row, so centring the row would collapse the rules to
-          nothing. The dividers are direct children rather than wrapped with
-          the shortcut they precede, so the three `size="fill"` thirds are
-          measured against the same stack and come out equal.
+          A `Grid` of three fixed tracks, not a row of `size="fill"` stack
+          items: `fill` is `flex-grow` over an `auto` basis, so each third still
+          starts from its own label's width and the three come out unequal —
+          which is exactly what put the icons off the centres of their cells.
+          `repeat(3, 1fr)` measures the tracks before the content, so the
+          middle label can wrap onto a second line without moving either rule.
+
+          Each rule leads the cell it divides off, which is what pins it to an
+          exact third. Grid items stretch by default, and the theme gives a
+          vertical `Divider` `align-self: stretch`, so both rules run the full
+          height of the tallest cell and stay identical when one label wraps.
         */}
-        <HStack gap={0} align="stretch">
+        <Grid columns={3} gap={0}>
           {SIGNIN_SHORTCUTS.map((shortcut, index) => (
-            <Fragment key={shortcut.label}>
+            <HStack key={shortcut.label} gap={0} align="stretch">
               {index > 0 && <Divider orientation="vertical" />}
               <StackItem size="fill">
-                <ShortcutButton shortcut={shortcut} />
+                <VStack align="center">
+                  <ShortcutButton shortcut={shortcut} canWrap />
+                </VStack>
               </StackItem>
-            </Fragment>
+            </HStack>
           ))}
-        </HStack>
+        </Grid>
       </Card>
     </Module>
   );
 }
+
+/**
+ * One horizontal band of the forecast comparison, rendered once per day.
+ *
+ * The bands are listed rather than written out inside the grid so that the
+ * order of the grid's children is the order of the bands: `FORECAST_BANDS` is
+ * the outer loop and `FORECAST` the inner one, which is what puts a band's two
+ * cells side by side in a single grid row. Writing the four bands inline would
+ * be the same markup but would let a later edit reorder or nest a cell and
+ * quietly break the row alignment; here a band is a row by construction.
+ *
+ * Every band is one line tall on purpose. The readings are what gets compared,
+ * so each is given its own row at its own type size — the reading band carries
+ * the icon and both temperatures because the icon *is* the reading's glyph and
+ * belongs on its line, not on a row of its own.
+ */
+interface ForecastBand {
+  /** Stable half of the cell key; the day supplies the other half. */
+  id: string;
+  render: (day: DayForecast) => ReactNode;
+}
+
+const FORECAST_BANDS: readonly ForecastBand[] = [
+  {
+    id: 'day',
+    render: day => (
+      <Text type="label" size="sm">
+        {day.label}
+      </Text>
+    ),
+  },
+  {
+    id: 'reading',
+    // `align="center"` and no wrap: the glyph and the two figures are one
+    // reading, and a band that wrapped would take its column's rows out of
+    // step with the other day's.
+    render: day => (
+      <HStack gap={1.5} align="center">
+        <Icon icon={day.icon} size="lg" color="accent" />
+        <HStack gap={1} align="center">
+          <Text size="lg" weight="bold" hasTabularNumbers>
+            {day.high}
+          </Text>
+          <Text size="sm" color="secondary" hasTabularNumbers>
+            {day.low}
+          </Text>
+        </HStack>
+      </HStack>
+    ),
+  },
+  {
+    id: 'rain',
+    render: day => (
+      <Text type="supporting" hasTabularNumbers>
+        降水 {day.rain}
+      </Text>
+    ),
+  },
+  {
+    id: 'summary',
+    render: day => <Text type="supporting">{day.summary}</Text>,
+  },
+];
 
 /** Date, two days of forecast, and the day's heat advisory. */
 function WeatherModule() {
@@ -1391,31 +1795,43 @@ function WeatherModule() {
         </Link>
       }>
       <VStack gap={2}>
-        <Grid columns={{minWidth: 120, max: 2}} gap={2}>
-          {FORECAST.map(day => (
-            <VStack key={day.label} gap={1}>
-              <Text type="label" size="sm">
-                {day.label}
-              </Text>
-              <HStack gap={1.5} align="center">
-                <Icon icon={day.icon} size="lg" color="accent" />
-                <VStack gap={0}>
-                  <HStack gap={1} align="center">
-                    <Text size="lg" weight="bold" hasTabularNumbers>
-                      {day.high}
-                    </Text>
-                    <Text size="sm" color="secondary" hasTabularNumbers>
-                      {day.low}
-                    </Text>
-                  </HStack>
-                  <Text type="supporting" hasTabularNumbers>
-                    降水 {day.rain}
-                  </Text>
-                </VStack>
-              </HStack>
-              <Text type="supporting">{day.summary}</Text>
-            </VStack>
-          ))}
+        {/*
+          Two fixed columns, filled band by band rather than column by column.
+
+          The module is a comparison — the reason to look at it is 今日 against
+          明日 — and a comparison only works if the two readings can be scanned
+          across. Emitting a column at a time makes each column its own stack,
+          so the bands only line up while both days happen to render to the same
+          heights: a summary that wraps, a 気温 that loses a digit or an icon
+          that changes metric all shear the other column's rows out of line.
+          Emitting a band at a time puts both days' icons in one grid row, both
+          temperatures in the next, and so on, so the rows are aligned by the
+          grid itself and stay aligned whatever the fixtures say.
+
+          `columns={2}` rather than the responsive `{minWidth, max: 2}` this
+          module used before: row-major filling is only correct at exactly two
+          tracks. Were the grid to collapse to one, the flow would read
+          今日, 明日, then both icons, then both temperatures — the bands
+          interleaved instead of stacked. Two columns stay legible all the way
+          down to the 390px rail (each track still clears 150px, and the widest
+          cell in the module is a four-character summary), so there is no width
+          in this template's range where collapsing would be the better trade;
+          pinning the count is what makes the row-major fill safe.
+
+          `rowGap` under `columnGap`: the bands are readings of one day and want
+          to cohere vertically, while the two days want to stay told apart. That
+          is also why no centre divider is drawn — a third track would have to
+          come out of the columns' width, and at rail measure the gap already
+          separates them.
+        */}
+        <Grid columns={2} columnGap={2} rowGap={1}>
+          {FORECAST_BANDS.map(band =>
+            FORECAST.map(day => (
+              <Fragment key={`${band.id}-${day.label}`}>
+                {band.render(day)}
+              </Fragment>
+            )),
+          )}
         </Grid>
         <Divider isFullBleed />
         <HStack gap={1.5} align="center" justify="between" wrap="wrap">
@@ -1570,7 +1986,7 @@ function PortalFooter() {
       </HStack>
       <HStack gap={2} align="center" justify="between" wrap="wrap">
         <Text type="supporting">
-          © 2026 みなとネット · 記事は128の提携社から配信されています
+          © 2026 アストリクス · 記事は128の提携社から配信されています
         </Text>
         <HStack gap={1} align="center">
           <Icon icon={DevicePhoneMobileIcon} size="xsm" color="secondary" />
@@ -1629,12 +2045,28 @@ export default function InformationMaximalistPage() {
       // reading through a letterbox.
       height="auto"
       header={
-        <LayoutHeader padding={2} hasDivider label="みなとネット ヘッダー">
+        // No `hasDivider`: the masthead's last row is a centred pair of promo
+        // links, and a rule directly under them reads as an underline for those
+        // two links rather than as the end of the header. The header already
+        // ends where the column grids begin. See the `layout-header` note in
+        // the theme, which drops the matching border for the same reason.
+        //
+        // `paddingBlockEnd={0}` docks that promo row on the header's bottom
+        // edge. Without it the row is spaced by 8px above (the masthead's own
+        // stack gap) and 16px below (the header's bottom padding plus the
+        // content's top padding), so the run of links floats low and reads as
+        // belonging to the columns underneath rather than to the masthead.
+        // Ceding the edge to `LayoutContent`'s padding leaves one 8px step on
+        // each side, which is the gap every other row of the masthead uses.
+        <LayoutHeader
+          padding={2}
+          paddingBlockEnd={0}
+          label="アストリクス ヘッダー">
           <Masthead isNarrow={isNarrow} />
         </LayoutHeader>
       }
       content={
-        <LayoutContent padding={2} label="ポータル ホーム">
+        <LayoutContent padding={2} label="アストリクス ホーム">
           {columns === 3 ? (
             <HStack gap={2} align="start">
               <VStack gap={2} width={DIRECTORY_WIDTH}>
@@ -1666,7 +2098,7 @@ export default function InformationMaximalistPage() {
         </LayoutContent>
       }
       footer={
-        <LayoutFooter padding={2} hasDivider label="みなとネット フッター">
+        <LayoutFooter padding={2} hasDivider label="アストリクス フッター">
           <PortalFooter />
         </LayoutFooter>
       }
