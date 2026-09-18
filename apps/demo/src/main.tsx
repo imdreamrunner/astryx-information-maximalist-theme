@@ -27,10 +27,17 @@ const isThemed =
   new URLSearchParams(window.location.search).get('theme') !== 'off';
 
 // Activation lives here, in the host, not in the template. The template is
-// content-only — it composes Astryx primitives and declares no provider — which
-// is what lets a consumer drop it into an app that already has its own Theme,
-// or render it under a different theme entirely. Wrapping it here is the demo
+// content-only — it composes Astryx primitives and declares no theme — which is
+// what lets a consumer drop it into an app that already has its own Theme, or
+// render it under a different theme entirely. Wrapping it here is the demo
 // choosing which theme to show it in.
+//
+// It does bring one provider of its own, and it is the exception that proves the
+// rule: the template mounts `InternationalizationProvider` for the locale it
+// publishes in, because the copy is the page and a page template that did not
+// own its own words would not be a page template. That provider carries no
+// visual opinion, is scoped to the template's subtree, and is overridden by a
+// host that already has one — none of which is true of a Theme.
 //
 // The theme is passed as unbuilt source, so <Theme> compiles it to CSS and
 // injects it at runtime. That is the right trade for a demo: it proves the

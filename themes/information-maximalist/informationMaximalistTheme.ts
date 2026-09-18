@@ -64,19 +64,34 @@ import {informationMaximalistIconRegistry} from './icons';
  * token alone: a theme that ships a font stack has to make something actually
  * wear it.
  *
- * The stack is the platform UI face and nothing else: `-apple-system` and
- * `BlinkMacSystemFont` for Apple, `Segoe UI` for Windows, `Roboto` for Android
- * and most Linux desktops, then `Helvetica Neue`/`Arial` for anything older,
- * ending in generic `sans-serif`. It names no script-specific family and makes
- * no assumption about the writing system of the text poured into it — the
- * system face is the one font already tuned for small UI sizes on the reader's
- * own platform, which is what this type scale needs at 14px. No webfont is
- * loaded, so consumers inherit no network dependency — a theme that shows this
- * much text cannot afford a flash of unstyled content on first paint.
+ * The stack is the platform UI face, named once per platform: `-apple-system`
+ * and `BlinkMacSystemFont` for Apple, `Hiragino Kaku Gothic ProN` for older
+ * macOS, `Yu Gothic` for Windows, `Noto Sans JP` for Android, ChromeOS and most
+ * Linux desktops, ending in generic `sans-serif`. The system face is the one
+ * font already tuned for small UI sizes on the reader's own platform, which is
+ * what this type scale needs at 14px, and no webfont is loaded — a theme that
+ * shows this much text cannot afford a flash of unstyled content on first
+ * paint, and consumers inherit no network dependency.
+ *
+ * The stack is chosen for *coverage*, not for a locale. It is the theme's job
+ * to render whatever text a host pours into it, and a stack of Latin-only UI
+ * faces does not: a browser resolving `Segoe UI` for a run it cannot draw falls
+ * through to a per-platform last resort, which is how mixed text ends up set in
+ * two different faces at two different apparent sizes on the same line. Every
+ * family named here covers Latin and CJK in one design, so a line that mixes
+ * them — a Latin acronym inside Japanese copy, a Japanese proper noun inside
+ * English copy — keeps one set of metrics. Nothing about that is specific to a
+ * language: the theme carries no strings at all, and this is simply the
+ * narrowest stack that can set the ones it is given.
+ *
+ * Because those families are not on the CLI's preinstalled list, `astryx theme
+ * build` reports that the theme names fonts it does not load. That is expected
+ * and is the trade being made: the alternative is a webfont on the critical
+ * path, and every family here is a system face on the platform it is named for.
  */
 const FONT_FAMILY = '-apple-system';
 const FONT_FALLBACKS =
-  'BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+  'BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif';
 
 /**
  * The Astryx brand blue, and the whole system's accent.
@@ -221,7 +236,9 @@ export const informationMaximalistTheme = defineTheme({
    * Line heights come out of the same expansion at 1.38–1.43 for the text
    * sizes, which is the band this kind of page wants: tight enough to stack
    * rows, loose enough that two-line headlines set at 14px keep an obvious gap
-   * between the descenders of one line and the caps of the next.
+   * between the descenders of one line and the caps of the next — and loose
+   * enough for scripts whose glyphs fill their em box, which is the case the
+   * band has to clear rather than the Latin one.
    */
   typography: {
     scale: {base: 14, ratio: 1.08},
@@ -297,7 +314,7 @@ export const informationMaximalistTheme = defineTheme({
     // above it. These pin every step a reader meets to 1.36–1.43, which keeps
     // the stack of rows even and still clears the descender-to-ascender gap
     // that a wrapped headline needs — a bare 1.2 closes that gap up entirely
-    // at these sizes.
+    // at these sizes, and closes it hardest for glyphs that fill their em box.
     '--text-body-leading': '1.4286', // 20px on 14
     '--text-label-leading': '1.4286', // 20px on 14
     '--text-code-leading': '1.4286', // 20px on 14
@@ -670,7 +687,8 @@ export const informationMaximalistTheme = defineTheme({
     heading: {
       // No negative tracking: it is a display-size trick, and these headings
       // are not display sizes. At 16–18px, pulling the letters together only
-      // closes the gaps that keep a module header legible.
+      // closes the gaps that keep a module header legible — and for a script
+      // whose glyphs already fill their em box, there is no gap there to take.
       base: {letterSpacing: '0'},
 
       // A custom visual role on Heading's `type` axis, so a masthead wordmark

@@ -4,7 +4,7 @@
     {
       "slug": "information-maximalist",
       "displayName": "Information Maximalist",
-      "description": "A dense portal visual system: a 14px type scale with a shallow ratio and 1.4 leading, compressed spacing, blue-gray hairlines instead of shadows, near-square corners, pale utility surfaces, hairline-divided text tabs, a red rationed to the values worth scanning for, a bounded centred page, and density that adapts to the viewport.",
+      "description": "A dense portal visual system: a 14px type scale with a shallow ratio and 1.4 leading, compressed spacing, blue-gray hairlines instead of shadows, near-square corners, pale utility surfaces, hairline-divided text tabs, a red rationed to the values worth scanning for, a bounded centred page, and density that adapts to the viewport. Carries no strings of its own, and its system font stack covers Latin and CJK in one set of metrics so a host can pour either script into it.",
       "maintained": true,
       "entry": "informationMaximalistTheme.ts",
       "exportName": "informationMaximalistTheme",
