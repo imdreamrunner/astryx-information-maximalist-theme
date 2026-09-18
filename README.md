@@ -5,8 +5,9 @@ independently usable things:
 
 - **A source theme** — `information-maximalist`, a dense portal visual system expressed entirely in
   Astryx theme tokens and component theming targets. It restyles _any_ Astryx composition.
-- **A page template** — `information-maximalist`, a deliberately dense portal home page. It is
-  content only: it composes Astryx primitives and declares no provider of its own.
+- **A page template** — `information-maximalist`, a deliberately dense portal home page, published
+  in two complete locales and opening in Japanese. It is content only: it composes Astryx
+  primitives and declares no theme of its own.
 
 They are designed to be used together but are not coupled. The template is authored purely against
 Astryx's semantic system — no hex colours, no stylesheets, no class names, no inline styles, and no
@@ -19,7 +20,9 @@ template rendered through the theme. Append
 [`?theme=off`](https://imdreamrunner.github.io/astryx-information-maximalist-theme/?theme=off) to
 see the same template with no theme applied; the difference is entirely what the theme contributes.
 Resize past 960px, 880px and 720px to watch the directory fold, the rail drop under the news well,
-and the masthead split.
+and the masthead split. It opens in Japanese; the `日本語` / `English` switcher at the end of the
+utility strip swaps the whole page — copy, units, dates, alt text, landmark names, the document
+title — without a reload, and remembers which you chose.
 
 ## Separation of concerns
 
@@ -33,6 +36,14 @@ The template deliberately does **not** wrap itself in a `<Theme>` provider. A pa
 installed a global theme would fight any app that already has one, and would make it impossible to
 render the page under a different theme. Activation belongs to the host, which is why it lives in
 the demo app and why the demo is the only project here that deploys to Pages.
+
+Localisation cuts the other way, and sits on the template's side of that line: the copy _is_ the
+page, so the template owns both locales and the switcher between them. It mounts Astryx's
+`InternationalizationProvider` for the handful of accessible names that come from inside Astryx
+rather than from its own content — the search field's clear button, the tab strip's overflow
+affordances — which is a scoped, string-only provider with no visual opinion, and one a host that
+already has its own simply overrides. The theme stays out of it entirely: it carries no strings, and
+its only concession to being used bilingually is a font stack that covers both scripts.
 
 ## Install the integration
 
@@ -87,8 +98,10 @@ Eight rules, all encoded through public theme APIs — no page-specific CSS:
 
 1. **Dense type** — 14px base on a shallow 1.08 ratio, so eight levels of hierarchy fit between
    12px and 16px, with every leading pinned into 1.36–1.43. The family stack is the platform UI
-   face and nothing else (`-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, `Roboto`,
-   `Helvetica Neue`, `Arial`), because a portal at this size is unreadable in a fallback serif.
+   face, named once per platform and chosen for script coverage (`-apple-system`,
+   `BlinkMacSystemFont`, `Hiragino Kaku Gothic ProN`, `Yu Gothic`, `Noto Sans JP`), because a portal
+   at this size is unreadable in a fallback serif — and because every family in it draws Latin and
+   CJK in one design, so a line that mixes them keeps one set of metrics.
 2. **Compressed space** — steps 1–4 are left at a canonical 4/8/12/16 rhythm, which is what a dense
    layout actually gauges itself against; only the larger steps are pulled in, so nothing above the
    fold spends space on air.
@@ -119,10 +132,24 @@ one page.
 
 #### A note on the fonts
 
-The stack is deliberately system-only — every face in it ships with macOS, Windows, iOS or Android,
-and every one is on `astryx theme build`'s preinstalled list, so the build raises no
-"names fonts it does not load" notice, the theme costs no webfont request, and nothing flashes on
-first paint.
+The stack is deliberately system-only — every face in it ships with macOS, Windows, iOS, Android or
+a mainstream Linux desktop — so the theme costs no webfont request and nothing flashes on first
+paint. It is also picked for coverage rather than for a locale: a stack of Latin-only UI faces
+leaves a browser to resolve CJK runs against a per-platform last resort, which is how mixed text
+ends up set in two faces at two apparent sizes on one line.
+
+That coverage has a cost worth knowing about. Three of the families are not on
+`astryx theme build`'s preinstalled list, so the build reports that the theme names fonts it does
+not load:
+
+```
+⚠ Theme "information-maximalist" names fonts it does not load:
+  "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP"
+```
+
+That notice is expected, and the build still succeeds. It is the correct trade here: each of those
+is a system face on the platform it is named for, so loading them as webfonts would put a request
+on the critical path of a page whose whole design is text above the fold.
 
 One platform is still worth knowing about: a bare Linux machine with none of these families
 installed and no fontconfig substitution falls through to generic `sans-serif`, which is whatever
@@ -151,12 +178,52 @@ project has those asset files. The masthead's `/astryx-logo.svg` is not among th
 mark, and there is no placeholder to stand in for one — so copy that one file out of the package's
 `public/` into the host's own public directory, or point the `<img>` at wherever the host keeps it.
 
-The page is a high-density portal home, and its content is original fictional US English copy
-throughout — a two-row masthead over a tinted search well, then three unequal columns of ruled
-modules: a service directory rail, headlines under section tabs, and a rail of sign-in, forecast,
-index quotes and most-popular rankings. It is built from bulleted text links carrying comment
-counts and status flags rather than from cards, with imagery rationed to one focal image per
-module.
+The page is a high-density portal home — a two-row masthead over a tinted search well, then three
+unequal columns of ruled modules: a service directory rail, headlines under section tabs, and a
+rail of sign-in, forecast, index quotes and most-popular rankings. It is built from bulleted text
+links carrying comment counts and status flags rather than from cards, with imagery rationed to one
+focal image per module. All of its content is original fiction, published in two complete locales.
+
+### Bilingual, Japanese by default
+
+The scaffolded page ships both editions and opens in Japanese. There is nothing to configure: the
+locale is the template's own state, the switcher is in the page, and the choice is remembered in
+`localStorage` under `astryx-information-maximalist.locale`.
+
+- **Japanese is the default on a first visit**, whatever `navigator.languages` says. The portal is a
+  Japanese publication whose English edition is a translation of it, so which edition it opens in is
+  a fact about the publication rather than something to negotiate per reader — negotiating it would
+  hand two readers in the same room two different front pages. A reader who has chosen before gets
+  their choice; a reader whose storage is blocked or unreadable gets Japanese, because reading
+  storage is wrapped and any failure resolves to the default rather than to an error.
+- **The switcher is a two-option `SegmentedControl`** at the end of the utility strip, labelled
+  `日本語` and `English` — each language in its own language, so a reader who landed in the wrong
+  edition can still recognise the way out. It is a real `radiogroup` of `radio`s, so the current
+  edition is announced as selected, one arrow-key ring moves between them, and the group's
+  accessible name is localised while the option names are not duplicated.
+- **Switching changes everything a reader can perceive**, client-side and without a reload: copy,
+  the 18 services, all 8 news sections and their feeds, article metadata, notices, questions,
+  keywords, events, sign-in, weather, markets, rankings, the footer, every `alt` and `aria-label`,
+  the three landmark names, `documentElement.lang`, `document.title` and the meta description. Units
+  and formats go with it — `℃` and `月/日(曜)` dates and unsymboled index levels in Japanese, `°F`
+  and `Thu 9/17` and dollar commodities in English. Nothing is lost across the switch: the selected
+  news section, ranking board and search scope all survive it, because they are held as
+  locale-independent ids rather than as labels.
+- **A handful of marks are deliberately shared**: the `NEW` status flag, which portals in both
+  languages print in Latin; the switcher's two endonyms; the article bullet `•`; the promo `»`; and
+  the brand mark's empty `alt`. Japanese copy also prints Latin acronyms (`IT`, `REIT`, `WEB`) and
+  Arabic numerals, as Japanese portals do. That list is not prose in the README — it is the
+  allowlist `pnpm run check:locales` enforces, so it cannot quietly grow.
+
+Architecturally it is one page, not two. A shared structure block holds every id, icon, image path
+and locale-independent figure; a `PortalContent` interface describes everything written in a
+language, keyed by those same ids; and `PORTAL_CONTENT` is that interface filled in twice. Because
+every keyed run is a `Record` over an id union and every ordered run a fixed-length
+`Run<T, N>` tuple, a missing translation or a changed row count is a **compile error** rather than a
+blank on the page — there are no per-string ternaries in the JSX and no duplicated page component.
+`pnpm run check:locales` covers what types cannot: that the two editions are the same object twice,
+that no Japanese string has escaped the model, and that no user-visible literal is written straight
+into the markup.
 
 Every row whose content is a piece of writing you open and read is the same `ArticleRow`: a flush
 bullet in the body ink, the headline at the page's 14px body size, and its metadata inside one
@@ -191,8 +258,15 @@ themes/
     icons.tsx                                  — Heroicons-backed IconRegistry
 
 templates/
-  information-maximalist.tsx                   — the page template source
+  information-maximalist.tsx                   — the page template source, both locales included
   information-maximalist.template.mjs          — template metadata (name, description, category)
+
+scripts/
+  check-locale-parity.mjs                      — parses the template and asserts the two editions
+                                                 agree, that no Japanese copy sits outside the
+                                                 Japanese edition, and that no user-visible literal
+                                                 is written into the JSX. Dev-only: absent from
+                                                 `files`, so it is not published
 
 public/astryx-logo.svg                         — the official Astryx brand mark in the masthead,
                                                  copied byte-for-byte from facebook/astryx's
@@ -235,7 +309,8 @@ pnpm dev
 | `pnpm theme:targets` | List every themeable target, with its props and states                                                       |
 | `pnpm theme:list`    | Verify the theme catalog resolves through the integration                                                    |
 | `pnpm template:list` | Verify the template is discoverable through the integration                                                  |
-| `pnpm check`         | lint → typecheck → theme:build → build, the same gates CI runs                                               |
+| `pnpm check:locales` | Assert locale parity and that no user-visible copy has escaped the content model                             |
+| `pnpm check`         | lint → check:locales → typecheck → theme:build → build, the same gates CI runs                               |
 
 ## The demo app
 
@@ -266,6 +341,11 @@ Two notes on the wiring, both in [`apps/demo/vite.config.ts`](./apps/demo/vite.c
 - **Assets.** `publicDir` points at this repository's own `public/`, so the demo serves the shipped
   imagery instead of keeping a second copy.
 
+[`apps/demo/index.html`](./apps/demo/index.html) carries the Japanese `lang`, title and description,
+which is the pre-JavaScript state — what a crawler reads and what the tab says while the bundle
+loads. The template then writes all three itself on mount, to Japanese again or to the reader's
+saved English, so the markup is the default rather than the whole answer.
+
 Pushes to `main` build and publish the demo via
 [`.github/workflows/deploy-demo.yml`](./.github/workflows/deploy-demo.yml). Only `apps/demo` is
 deployed; the integration is never published to npm.
@@ -278,10 +358,13 @@ This package began as an extraction of the Information Maximalist page template 
 repackaged as a standalone installable integration.
 
 The template has since been rewritten: its composition and all of its copy are original to this
-repository, and the copy is fiction — the portal, its services, its headlines, its quotes and its
-place names do not exist. The theme is original to this repository too. What remains from the
-extraction is the imagery in `public/template-assets/`, which is Astryx's own stock template asset
-set.
+repository, in both locales, and the copy is fiction — the portal, its services, its headlines, its
+quotes and its place names do not exist in either edition. The English edition is an original
+localisation rather than a machine translation of the Japanese one: the invented city is 潮見 in
+Japanese and Harborview in English, measurements are converted rather than transliterated, and each
+edition's section names, market labels and datestamps are the ones its own readers would expect. The
+theme is original to this repository too. What remains from the extraction is the imagery in
+`public/template-assets/`, which is Astryx's own stock template asset set.
 
 Two things in the page are upstream's rather than this repository's, and are kept byte-identical to
 it:
@@ -295,9 +378,10 @@ The mark is the current official Astryx brand mark and is not redrawn here, so t
 verifiable: `sha256sum` it against the upstream path. It is the docsite's brand asset, which is the
 same artwork the docsite's `logos.tsx` inlines as `AstryxIcon`; the public file is the form this
 template wants, because an `<img>` cannot inherit `currentColor` the way that inline path does, and
-the file carries the brand blue itself. It renders before the `Astryx` wordmark with `alt=""` — the
-`<h1>` beside it already carries the site's name, so naming the image too would announce that name
-twice.
+the file carries the brand blue itself. It renders before the wordmark — `アストリクス` in Japanese,
+`Astryx` in English — with `alt=""`, because the `<h1>` beside it already carries the site's name, so
+naming the image too would announce that name twice. That is also why the mark needs no localised
+alternative text: it names nothing, so there is nothing in it to translate.
 
 The wordmark next to it is set to match the mark rather than to look like a heading: the theme
 defines a `wordmark` role on Heading's `type` axis whose line box collapses onto a 20px glyph box,
