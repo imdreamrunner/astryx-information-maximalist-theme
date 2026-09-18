@@ -52,7 +52,8 @@
     "theme:list": "astryx theme list --package astryx-information-maximalist-theme",
     "theme:targets": "astryx theme targets",
     "template:list": "astryx template --list --package astryx-information-maximalist-theme",
-    "check": "pnpm run lint && pnpm run typecheck && pnpm run theme:build && pnpm run build"
+    "check:locales": "node scripts/check-locale-parity.mjs",
+    "check": "pnpm run lint && pnpm run check:locales && pnpm run typecheck && pnpm run theme:build && pnpm run build"
   },
   "peerDependencies": {
     "@astryxdesign/core": ">=0.6.0",
