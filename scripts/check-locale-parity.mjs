@@ -25,9 +25,10 @@
  *    identifiers declared below. An `aria-label` translated in place, or a
  *    Japanese label left on a component after a refactor, fails here.
  * 3. **No user-visible literal is written straight into the JSX.** Any text
- *    node, and any string on an attribute a reader can hear or read, has to be
- *    on the short allowlist below — which is the documented list of symbols
- *    and brand conventions that are deliberately the same in both editions.
+ *    node, any string an expression container renders as a child, and any
+ *    string on an attribute a reader can hear or read, has to be on the short
+ *    allowlist below — which is the documented list of symbols and brand
+ *    conventions that are deliberately the same in both editions.
  *
  * The one thing no automated check can do is judge the English side: a
  * plausible English sentence in the wrong place is still a plausible English
@@ -36,15 +37,33 @@
  *
  * Run by `pnpm run check`. Exits non-zero with a list of every failure, not
  * just the first.
+ *
+ * Takes an optional path to check a file other than the template, which is
+ * what `--self-test` uses to check the checker against the fixtures at the
+ * foot of this file: `node scripts/check-locale-parity.mjs --self-test`.
  */
 
-import {readFileSync} from 'node:fs';
+import {mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
+import {spawnSync} from 'node:child_process';
+import {tmpdir} from 'node:os';
+import {join, relative, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import ts from 'typescript';
 
-const TEMPLATE_PATH = fileURLToPath(
-  new URL('../templates/information-maximalist.tsx', import.meta.url),
-);
+const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
+const [pathArgument] = process.argv.slice(2);
+
+if (pathArgument === '--self-test') {
+  selfTest();
+}
+
+const TEMPLATE_PATH =
+  pathArgument === undefined
+    ? join(REPO_ROOT, 'templates/information-maximalist.tsx')
+    : resolve(pathArgument);
+
+/** How the file under check is named in messages, relative to the repo root. */
+const TEMPLATE_LABEL = relative(REPO_ROOT, TEMPLATE_PATH);
 
 /** The two edition objects, and which one is allowed to hold Japanese. */
 const JAPANESE_EDITION = 'JAPANESE_CONTENT';
@@ -131,7 +150,7 @@ const source = ts.createSourceFile(
 /** `templates/information-maximalist.tsx:512`, for a message a reader can click. */
 function at(node) {
   const {line} = source.getLineAndCharacterOfPosition(node.getStart(source));
-  return `templates/information-maximalist.tsx:${line + 1}`;
+  return `${TEMPLATE_LABEL}:${line + 1}`;
 }
 
 /** The initializer of a top-level `const <name> = …`, if the file has one. */
@@ -170,6 +189,92 @@ function literalText(node) {
     );
   }
   return node.text;
+}
+
+/**
+ * Whether a literal writes any text of its own.
+ *
+ * `{' '}` is the standard way to keep a space JSX would otherwise collapse, and
+ * `` {`${a}${b}`} `` only joins two values from the model. A JSX *text* node of
+ * pure whitespace is already ignored, so ignoring these keeps the two forms
+ * symmetrical.
+ *
+ * Only whitespace counts as writing nothing. A mark like `•` or `/` is text a
+ * reader sees, so it belongs on `SHARED_JSX_LITERALS` with a reason next to it
+ * rather than being waved through by category — which is why the two marks the
+ * template does use are listed there.
+ */
+function isWrittenCopy(node) {
+  return literalText(node).replaceAll('${}', '').trim() !== '';
+}
+
+/**
+ * The literals an expression can put on the page, ignoring the ones it only
+ * reads.
+ *
+ * `{flag === 'new' && <Badge />}` renders a badge, never the word `new`: the
+ * literal is an identifier being compared, so descending into the left of an
+ * `&&` would flag the template's own internal ids. The same reasoning excludes
+ * call arguments and property names — an argument is an input, not output.
+ * What is left is the set of positions whose value React actually renders, so a
+ * literal reached through one of them is copy and has to be accounted for.
+ */
+function renderedLiterals(node, found = []) {
+  if (node === undefined) {
+    return found;
+  }
+  if (isTextLiteral(node)) {
+    found.push(node);
+    return found;
+  }
+  if (ts.isParenthesizedExpression(node)) {
+    return renderedLiterals(node.expression, found);
+  }
+  if (ts.isJsxExpression(node)) {
+    return renderedLiterals(node.expression, found);
+  }
+  if (ts.isConditionalExpression(node)) {
+    // The condition is read; both branches are rendered.
+    renderedLiterals(node.whenTrue, found);
+    renderedLiterals(node.whenFalse, found);
+    return found;
+  }
+  if (ts.isBinaryExpression(node)) {
+    const operator = node.operatorToken.kind;
+    if (operator === ts.SyntaxKind.AmpersandAmpersandToken) {
+      // `cond && value`: only the right side reaches the page.
+      return renderedLiterals(node.right, found);
+    }
+    if (
+      operator === ts.SyntaxKind.BarBarToken ||
+      operator === ts.SyntaxKind.QuestionQuestionToken ||
+      operator === ts.SyntaxKind.PlusToken
+    ) {
+      // A fallback or a concatenation renders either side.
+      renderedLiterals(node.left, found);
+      renderedLiterals(node.right, found);
+    }
+    return found;
+  }
+  if (ts.isArrayLiteralExpression(node)) {
+    // An array of children renders each element.
+    for (const element of node.elements) {
+      renderedLiterals(element, found);
+    }
+    return found;
+  }
+  // Calls, identifiers, property accesses and comparisons are opaque: whatever
+  // they evaluate to comes from somewhere else, and that somewhere is checked
+  // on its own terms.
+  return found;
+}
+
+/** Whether an expression container sits in child position, not on an attribute. */
+function isJsxChild(node) {
+  return (
+    node.parent !== undefined &&
+    (ts.isJsxElement(node.parent) || ts.isJsxFragment(node.parent))
+  );
 }
 
 // -----------------------------------------------------------------------------
@@ -326,30 +431,40 @@ function inspect(node) {
     }
   }
 
+  // The same text, written into an expression container instead: `{'Tokyo'}`
+  // renders exactly what `Tokyo` renders, and Prettier keeps both forms, so
+  // checking only text nodes would leave the quoted one as a way through.
+  if (ts.isJsxExpression(node) && isJsxChild(node)) {
+    for (const literal of renderedLiterals(node)) {
+      const text = literalText(literal);
+      if (SHARED_JSX_LITERALS.has(text)) {
+        seenJsxLiterals.add(text);
+      } else if (isWrittenCopy(literal)) {
+        fail(
+          `${at(literal)}: JSX expression text "${text}" is not in the ` +
+            `content model and is not a documented shared literal`,
+        );
+      }
+    }
+  }
+
   if (
     ts.isJsxAttribute(node) &&
     VISIBLE_ATTRIBUTES.has(node.name.getText(source))
   ) {
-    const initializer = node.initializer;
-    const literal =
-      initializer === undefined
-        ? undefined
-        : ts.isStringLiteral(initializer)
-          ? initializer
-          : ts.isJsxExpression(initializer) &&
-              initializer.expression !== undefined &&
-              isTextLiteral(initializer.expression)
-            ? initializer.expression
-            : undefined;
-    if (literal !== undefined) {
+    // `renderedLiterals` rather than the initializer itself: an attribute is
+    // just as reachable through a ternary — `aria-label={open ? 'Hide' : …}` —
+    // as a child is.
+    for (const literal of renderedLiterals(node.initializer)) {
       const text = literalText(literal);
-      if (!SHARED_JSX_LITERALS.has(text)) {
+      if (SHARED_JSX_LITERALS.has(text)) {
+        seenJsxLiterals.add(text);
+      } else if (isWrittenCopy(literal)) {
         fail(
           `${at(node)}: ${node.name.getText(source)}="${text}" is a literal ` +
             `rather than a value from the content model`,
         );
       }
-      seenJsxLiterals.add(text);
     }
   }
 
@@ -431,3 +546,176 @@ console.log(
     `${SHARED_JSX_LITERALS.size + Object.values(SHARED_BINDINGS).flat().length} ` +
     `documented shared literals`,
 );
+
+// -----------------------------------------------------------------------------
+// Self-test
+// -----------------------------------------------------------------------------
+
+/**
+ * Checks the checker, by running it over fixtures that each write one literal
+ * in one syntactic position.
+ *
+ * Check 3 is only as good as its list of positions, and the list is not
+ * obvious: `{'Tokyo'}` renders the same text as `Tokyo` but is a different
+ * node, and Prettier preserves whichever form is written, so a form nobody
+ * thought of is a silent hole rather than a formatting error. The cases below
+ * are therefore paired — for each position that has to fail, a neighbouring one
+ * that has to keep passing, because a check that flags `flag === 'new'` or an
+ * `href` would be turned off within a week.
+ *
+ * Fixtures are deliberately not whole templates: each one is asserted on the
+ * presence or absence of its own marker, so the unrelated failures a two-line
+ * module naturally produces (no editions to compare, allowlist entries unused)
+ * do not have to be modelled.
+ */
+function selfTest() {
+  const FIXTURES = [
+    // Positions that render text: each marker has to be reported.
+    {
+      name: 'jsx-text',
+      source: 'export const A = () => <p>MARK_TEXT</p>;',
+      flagged: ['MARK_TEXT'],
+    },
+    {
+      name: 'jsx-expression-string',
+      source: "export const A = () => <p>{'MARK_EXPR'}</p>;",
+      flagged: ['MARK_EXPR'],
+    },
+    {
+      name: 'jsx-expression-template',
+      source: 'export const A = () => <p>{`MARK_TEMPLATE`}</p>;',
+      flagged: ['MARK_TEMPLATE'],
+    },
+    {
+      name: 'jsx-expression-interpolated',
+      source:
+        'export const A = ({n}: {n: number}) => <p>{`${n} MARK_INTERP`}</p>;',
+      flagged: ['MARK_INTERP'],
+    },
+    {
+      // A mark between two model values is still text, so it has to be
+      // documented on the allowlist rather than exempt for being punctuation.
+      name: 'separator-template',
+      source:
+        'export const A = ({a, b}: {a: string; b: string}) => <p>{`${a} / ${b}`}</p>;',
+      flagged: ['JSX expression text'],
+    },
+    {
+      name: 'jsx-expression-ternary',
+      source:
+        "export const A = ({on}: {on: boolean}) => <p>{on ? 'MARK_TRUE' : 'MARK_FALSE'}</p>;",
+      flagged: ['MARK_TRUE', 'MARK_FALSE'],
+    },
+    {
+      name: 'jsx-expression-logical-value',
+      source:
+        "export const A = ({on}: {on: boolean}) => <p>{on && 'MARK_RHS'}</p>;",
+      flagged: ['MARK_RHS'],
+    },
+    {
+      name: 'jsx-expression-fallback',
+      source:
+        "export const A = ({s}: {s?: string}) => <p>{s ?? 'MARK_FALLBACK'}</p>;",
+      flagged: ['MARK_FALLBACK'],
+    },
+    {
+      name: 'jsx-expression-array',
+      source: "export const A = () => <p>{['MARK_ARRAY']}</p>;",
+      flagged: ['MARK_ARRAY'],
+    },
+    {
+      name: 'jsx-fragment-child',
+      source: "export const A = () => <>{'MARK_FRAGMENT'}</>;",
+      flagged: ['MARK_FRAGMENT'],
+    },
+    {
+      name: 'visible-attribute',
+      source: 'export const A = () => <img src="/a.png" alt="MARK_ALT" />;',
+      flagged: ['MARK_ALT'],
+    },
+    {
+      name: 'visible-attribute-ternary',
+      source:
+        "export const A = ({on}: {on: boolean}) => <p aria-label={on ? 'MARK_LABEL' : 'MARK_OTHER'} />;",
+      flagged: ['MARK_LABEL', 'MARK_OTHER'],
+    },
+
+    // Positions that only read a value: reporting these would make the check
+    // unusable, so each marker has to stay unreported.
+    {
+      name: 'comparison-under-guard',
+      source:
+        "export const A = ({flag}: {flag: string}) => <p>{flag === 'MARK_ID' && <b />}</p>;",
+      ignored: ['MARK_ID'],
+    },
+    {
+      name: 'call-argument',
+      source:
+        "export const A = ({t}: {t: (k: string) => string}) => <p>{t('MARK_KEY')}</p>;",
+      ignored: ['MARK_KEY'],
+    },
+    {
+      name: 'invisible-attribute',
+      source: 'export const A = () => <a href="/MARK_HREF">{null}</a>;',
+      ignored: ['MARK_HREF'],
+    },
+    {
+      name: 'documented-shared-literal',
+      source: "export const A = () => <p>{'•'}</p>;",
+      ignored: ['JSX expression text'],
+    },
+    {
+      name: 'explicit-space',
+      source: "export const A = ({a}: {a: string}) => <p>{a}{' '}{a}</p>;",
+      ignored: ['JSX expression text'],
+    },
+    {
+      name: 'interpolation-only-template',
+      source:
+        'export const A = ({a, b}: {a: string; b: string}) => <p>{`${a}${b}`}</p>;',
+      ignored: ['JSX expression text'],
+    },
+  ];
+
+  const directory = mkdtempSync(join(tmpdir(), 'locale-parity-selftest-'));
+  const problems = [];
+
+  for (const fixture of FIXTURES) {
+    const file = join(directory, `${fixture.name}.tsx`);
+    writeFileSync(file, `${fixture.source}\n`);
+    const run = spawnSync(
+      process.execPath,
+      [fileURLToPath(import.meta.url), file],
+      {encoding: 'utf8'},
+    );
+    const output = `${run.stdout}${run.stderr}`;
+    for (const marker of fixture.flagged ?? []) {
+      if (!output.includes(marker)) {
+        problems.push(`${fixture.name}: expected "${marker}" to be reported`);
+      }
+    }
+    for (const marker of fixture.ignored ?? []) {
+      if (output.includes(marker)) {
+        problems.push(
+          `${fixture.name}: expected "${marker}" not to be reported`,
+        );
+      }
+    }
+  }
+
+  rmSync(directory, {recursive: true, force: true});
+
+  if (problems.length > 0) {
+    console.error(`✗ locale parity self-test: ${problems.length} problem(s)\n`);
+    for (const problem of problems) {
+      console.error(`  - ${problem}`);
+    }
+    console.error('');
+    process.exit(1);
+  }
+  console.log(
+    `✓ locale parity self-test: ${FIXTURES.length} literal positions ` +
+      `classified as documented`,
+  );
+  process.exit(0);
+}
